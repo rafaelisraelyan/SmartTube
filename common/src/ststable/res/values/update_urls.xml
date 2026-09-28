@@ -5,4 +5,9 @@
              so this URL never changes; the APK links inside it point at the latest release. -->
         <item>https://raw.githubusercontent.com/rafaelisraelyan/GRTubeYou/main/version.json</item>
     </string-array>
+    <!-- GRTubeYou: beta channel, used when the "Beta features" switch is on.
+         Kept as a separate array so that the "update source" host list stays untouched. -->
+    <string-array name="update_urls_beta">
+        <item>https://raw.githubusercontent.com/rafaelisraelyan/GRTubeYou/main/version-beta.json</item>
+    </string-array>
 </resources>

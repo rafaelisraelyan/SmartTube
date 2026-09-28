@@ -4,6 +4,7 @@ import android.content.Context;
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
+import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.smartyoutubetv2.common.R;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
@@ -33,13 +34,37 @@ public class AboutSimpleSettingsPresenter extends BasePresenter<Void> {
 
         AppDialogPresenter settingsPresenter = AppDialogPresenter.instance(getContext());
 
-        appendAutoUpdateSwitch(settingsPresenter);
-
+        // GRTubeYou: order requested by the user -
+        // check for updates, changelog, beta channel, then how to be notified.
         appendUpdateCheckButton(settingsPresenter);
 
-        appendInstallBridge(settingsPresenter);
+        appendBetaChannelSwitch(settingsPresenter);
+
+        appendAutoUpdateSwitch(settingsPresenter);
+
+        // GRTubeYou: the "Install ATV/Amazon bridge" entry is hidden. It installs a
+        // helper APK that bridges to the official YouTube TV app for voice search -
+        // GRTubeYou already has its own search, and the bridge pointed at the
+        // upstream SmartTubeNext release URL. The method is kept for reference.
+        //appendInstallBridge(settingsPresenter);
 
         settingsPresenter.showDialog(mainTitle);
+    }
+
+    /**
+     * GRTubeYou: switch between the stable and the beta update channel.
+     */
+    private void appendBetaChannelSwitch(AppDialogPresenter settingsPresenter) {
+        settingsPresenter.appendSingleSwitch(UiOptionItem.from(
+                getContext().getString(R.string.beta_features),
+                optionItem -> {
+                    GlobalPreferences.setBetaChannelEnabled(getContext(), optionItem.isSelected());
+                    MessageHelpers.showMessage(getContext(), getContext().getString(R.string.beta_features_switched));
+                    // The manifest list is baked in the constructor, so a new
+                    // AppUpdatePresenter is needed for the channel to take effect.
+                    AppUpdatePresenter.unhold();
+                },
+                GlobalPreferences.isBetaChannelEnabled(getContext())));
     }
 
     private void appendAutoUpdateSwitch(AppDialogPresenter settingsPresenter) {

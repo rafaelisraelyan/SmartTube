@@ -5,6 +5,7 @@ import android.content.Context;
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.appupdatechecker2.AppUpdateCheckerListener;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
+import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.smartyoutubetv2.common.R;
 import com.liskovsoft.smartyoutubetv2.common.app.models.errors.ErrorFragmentData;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
@@ -31,7 +32,46 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         super(context);
         mUpdateChecker = new AppUpdateChecker(context, this);
         mSettingsPresenter = AppDialogPresenter.instance(context);
-        mUpdateManifestUrls = context.getResources().getStringArray(R.array.update_urls);
+        mUpdateManifestUrls = obtainUpdateManifestUrls(context);
+    }
+
+    /**
+     * GRTubeYou: stable or beta channel, depending on the "Beta features" switch.
+     * Falls back to the stable URLs when the beta array is missing (other flavors).
+     */
+    private static String[] obtainUpdateManifestUrls(Context context) {
+        if (GlobalPreferences.isBetaChannelEnabled(context)) {
+            int betaUrls = context.getResources().getIdentifier("update_urls_beta", "array", context.getPackageName());
+
+            if (betaUrls > 0) {
+                String[] urls = context.getResources().getStringArray(betaUrls);
+
+                if (urls.length > 0) {
+                    return appendCacheBuster(urls);
+                }
+            }
+        }
+
+        return appendCacheBuster(context.getResources().getStringArray(R.array.update_urls));
+    }
+
+    /**
+     * GRTubeYou: the manifest URL never changes, but its content does on every
+     * release. Without a unique URL, any cache in between (CDN, proxy, ISP)
+     * happily serves the previous version.json, and the app then reports
+     * "you are up to date" while a newer build is already published.
+     * A per-check timestamp makes every request unique.
+     */
+    private static String[] appendCacheBuster(String[] urls) {
+        String[] result = new String[urls.length];
+
+        for (int i = 0; i < urls.length; i++) {
+            String url = urls[i];
+            String separator = url.contains("?") ? "&" : "?";
+            result[i] = url + separator + "t=" + System.currentTimeMillis();
+        }
+
+        return result;
     }
 
     public static AppUpdatePresenter instance(Context context) {

@@ -756,4 +756,8 @@
         <item quantity="one">%s second</item>
         <item quantity="other">%s seconds</item>
     </plurals>
+
+    <!-- GRTubeYou: beta update channel -->
+    <string name="beta_features" translatable="false">GRTubeYou Beta</string>
+    <string name="beta_features_switched" translatable="false">Update channel switched. Check for updates again.</string>
 </resources>

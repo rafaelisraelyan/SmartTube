@@ -26,6 +26,8 @@ import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 
 public class IconHeaderItemPresenter extends RowHeaderPresenter {
     private static final String TAG = IconHeaderItemPresenter.class.getSimpleName();
+    /** GRTubeYou: how much bigger the focused sidebar item looks. */
+    private static final float FOCUSED_SCALE = 1.08f;
     private float mUnselectedAlpha;
     private final int mResId;
     private final String mIconUrl;
@@ -96,6 +98,30 @@ public class IconHeaderItemPresenter extends RowHeaderPresenter {
     protected void onSelectLevelChanged(RowHeaderPresenter.ViewHolder holder) {
         holder.view.setAlpha(mUnselectedAlpha + holder.getSelectLevel() *
                 (1.0f - mUnselectedAlpha));
+
+        boolean focused = holder.getSelectLevel() > 0;
+
+        // GRTubeYou: the focused sidebar item gets a rounded highlight and its
+        // content is scaled up a little.
+        // NOTE: only the icon and the name are scaled, never the root view. Scaling
+        // the root would scale the highlight too, making it wider than the item and
+        // getting clipped by the parent - which is what turned the pill into a shape
+        // with a straight right edge.
+        View root = holder.view;
+
+        root.setBackgroundResource(focused ? R.drawable.sidebar_item_highlight : 0);
+
+        float scale = focused ? FOCUSED_SCALE : 1f;
+
+        setChildScale(root.findViewById(R.id.header_icon), scale);
+        setChildScale(root.findViewById(R.id.header_label), scale);
+    }
+
+    private void setChildScale(View view, float scale) {
+        if (view != null) {
+            view.setScaleX(scale);
+            view.setScaleY(scale);
+        }
     }
 
     private final RequestListener<Drawable> mErrorListener = new RequestListener<Drawable>() {

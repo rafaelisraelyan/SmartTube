@@ -1375,6 +1375,16 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
             return;
         }
 
+        // GRTubeYou: no recommendations row while watching Shorts. Up/down already
+        // pages through the Shorts feed, so the row only repeats what is one keypress
+        // away and eats a third of the screen.
+        // NOTE: SuggestionsController.appendSuggestions() clears the previous rows
+        // before appending, so skipping here also removes a row left over from a
+        // regular video the user came from.
+        if (isCurrentVideoShorts()) {
+            return;
+        }
+
         if (group == null || group.isEmpty()) {
             Log.e(TAG, "Suggestions row is empty!");
             return;
@@ -1568,6 +1578,14 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     public boolean isSuggestionsEmpty() {
         // Ignore first row. It's player controls row.
         return mRowsAdapter == null || mRowsAdapter.size() <= SUGGESTIONS_START_INDEX;
+    }
+
+    /**
+     * GRTubeYou: is the video being played a Shorts?
+     */
+    private boolean isCurrentVideoShorts() {
+        Video video = mPlaybackPresenter != null ? mPlaybackPresenter.getVideo() : null;
+        return video != null && video.isShorts;
     }
 
     /**

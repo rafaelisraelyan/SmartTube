@@ -2,6 +2,7 @@
 <resources>
     <!-- NOTE: Please don't translate this file. All strings have been moved to the common module. -->
     <string translatable="false" name="app_name"><![CDATA[GRTubeYou]]></string>
+    <string translatable="false" name="compose_home_label"><![CDATA[GRTubeYou (Compose)]]></string>
     <string translatable="false" name="browse_title"><![CDATA[SmartTube]]></string>
     <string name="related_movies">Related Videos</string>
     <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>

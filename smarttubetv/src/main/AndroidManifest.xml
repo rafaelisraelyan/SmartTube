@@ -208,6 +208,7 @@
         <!-- GRTubeYou: Compose for TV entry point -->
         <activity
             android:name="com.liskovsoft.smartyoutubetv2.tv.ui.compose.ComposeHomeActivity"
+            android:label="@string/compose_home_label"
             android:exported="true"
             android:launchMode="singleInstance"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection"

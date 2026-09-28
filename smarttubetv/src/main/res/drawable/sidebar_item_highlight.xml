@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GRTubeYou: highlight for the focused item in the left sidebar.
+  The radius is exactly half the item height (5dp + 32dp icon + 5dp = 42dp, so
+  half is 21dp) - that is what makes it a clean pill. A larger value gets clamped
+  per corner and the shape renders unevenly.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/sidebar_item_highlight" />
+    <corners android:radius="21dp" />
+</shape>

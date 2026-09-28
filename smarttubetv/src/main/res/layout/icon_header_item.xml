@@ -1,21 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  GRTubeYou: the root padding gives the focused highlight (sidebar_item_highlight)
+  even margins on all sides, and the height wraps the content so the rounded
+  background hugs the icon and the name instead of the whole row.
+
+  clipChildren="false" is required, not cosmetic. The focused item scales its icon
+  and label by 1.08, and the scale pushes the drawn content past the view bounds -
+  the label's right edge already sits exactly on paddingEnd, so ~4% of the text
+  width lands outside. Android clips children to the padding box (not to the view
+  edge) when clipChildren is true, so that overflow was silently chopped off and
+  the selected menu entries looked truncated. Letting the children draw into the
+  padding is safe: the highlight background covers the whole view including the
+  padding, so the scaled text still stays inside the pill.
+-->
 <androidx.leanback.widget.NonOverlappingLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:defaultFocusHighlightEnabled="false"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
     <ImageView
         android:id="@+id/header_icon"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:layout_gravity="center_vertical"
         android:contentDescription="@string/header_icon" />
 
     <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.marqueetextviewcompat.HeaderMarqueeTextViewCompat
         android:id="@+id/header_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_gravity="center_vertical"
         android:layout_marginStart="10dp"
 
         android:singleLine="true"

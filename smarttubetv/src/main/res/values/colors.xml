@@ -68,4 +68,7 @@
     <color name="lb_speech_orb_not_recording">@color/orb_color</color>
     <color name="lb_speech_orb_not_recording_pulsed">@color/orb_bright_color</color>
     <color name="lb_speech_orb_not_recording_icon">@color/orb_icon_color</color>
+
+    <!-- GRTubeYou: highlight of the focused item in the left sidebar -->
+    <color name="sidebar_item_highlight">#33FFFFFF</color>
 </resources>
