@@ -23,6 +23,8 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+// GRTubeYou: needed for the Jetpack Compose for TV UI (Compose is Kotlin-only)
+apply plugin: 'kotlin-android'
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -51,6 +53,15 @@ android {
     buildToolsVersion project.properties.buildToolsVersion
     testOptions.unitTests.includeAndroidResources = true
     ndkVersion "21.0.6113669" // reduce size of the *.so files (stripping debug symbols)
+
+    // GRTubeYou: Jetpack Compose for TV
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        // Must match kotlinVersion 1.8.10 (see SharedModules/constants.gradle)
+        kotlinCompilerExtensionVersion '1.4.4'
+    }
     
     defaultConfig {
         // values linked with applicationId: searchable.searchSuggestAuthority, searchable.searchSuggestIntentData, VideoContract.CONTENT_AUTHORITY
@@ -251,6 +262,17 @@ dependencies {
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
     implementation 'net.gotev:speech:' + gotevSpeechVersion
+
+    // GRTubeYou: Compose for TV. Deliberately NOT using activity-compose -
+    // this module runs on a plain FragmentActivity (not ComponentActivity), so
+    // the UI is hosted in a ComposeView instead.
+    // BOM 2024.06.00 == Compose 1.6.8, which is exactly what androidx.tv:tv-material:1.0.0
+    // was compiled against. Do not bump: newer Compose drags in lifecycle 2.8.x.
+    implementation platform('androidx.compose:compose-bom:2024.06.00')
+    implementation 'androidx.tv:tv-material:1.0.0'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.foundation:foundation'
+    implementation 'androidx.compose.runtime:runtime'
 
     // ByeByeDPI fix
     implementation 'org.conscrypt:conscrypt-android:' + conscryptVersion

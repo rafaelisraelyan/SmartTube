@@ -66,5 +66,18 @@ allprojects {
         //     // substitute remote dependency with local module
         //     substitute module('androidx.leanback:leanback') using project(':leanback-1.0.0')
         // }
+
+        // GRTubeYou: pin androidx.lifecycle to 2.7.0.
+        // AGP 7.4.2 ships R8 4.0.52, which crashes with a NullPointerException while
+        // dexing androidx/lifecycle/LiveData$1 from lifecycle 2.8.x. Compose 1.6.8
+        // (the version androidx.tv:tv-material:1.0.0 was built against) needs only
+        // 2.7.0, so nothing is lost by pinning here.
+        resolutionStrategy.eachDependency { details ->
+            // NOTE: the *-compose artifacts are versioned together with Compose,
+            // not with lifecycle, so they must be left untouched.
+            if (details.requested.group == 'androidx.lifecycle' && !details.requested.name.endsWith('-compose')) {
+                details.useVersion '2.7.0'
+            }
+        }
     }
 }

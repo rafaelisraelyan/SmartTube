@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="update_urls">
-        <item>https://github.com/yuliskov/SmartTubeNext/releases/download/latest/smarttube_stable2.json</item>
+        <!-- GRTubeYou: own release channel. The manifest lives on the default branch,
+             so this URL never changes; the APK links inside it point at the latest release. -->
+        <item>https://raw.githubusercontent.com/rafaelisraelyan/GRTubeYou/main/version.json</item>
     </string-array>
 </resources>
