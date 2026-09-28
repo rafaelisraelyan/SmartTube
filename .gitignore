@@ -71,3 +71,9 @@ tmp/
 fabric.properties
 *BAK.java
 hs_err_pid*.log
+
+# GRTubeYou: signing secrets must never be committed
+keystore.properties
+*.jks
+*.keystore
+google-services.json

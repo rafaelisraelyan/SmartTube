@@ -110,6 +110,7 @@ import okhttp3.Response;
 
 public class Utils {
     public static final String[] KNOWN_PACKAGES = {
+            "com.gr.grtubeyou",
             "com.liskovsoft.smarttubetv.beta",
             "com.teamsmart.videomanager.tv",
             "org.smarttube.beta",

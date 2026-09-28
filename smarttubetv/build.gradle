@@ -164,7 +164,7 @@ android {
             targetSdkVersion project.properties.compileSdkVersion
         }
         ststable {
-            applicationId "org.smarttube.stable"
+            applicationId "com.gr.grtubeyou"
             targetSdkVersion project.properties.compileSdkVersion
         }
         stfdroid {
@@ -237,14 +237,16 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:' + rxJavaVersion
 
     // Add the Firebase Crashlytics SDK.
+    // DISABLED for the GRTubeYou fork: we don't own the smarttube-tv Firebase project,
+    // and its google-services.json only carries a client entry for org.smarttube.stable.
 
-    stbetaImplementation('com.google.firebase:firebase-crashlytics:' + firebaseCrashlyticsVersion) {
-        transitive = true
-    }
+    // stbetaImplementation('com.google.firebase:firebase-crashlytics:' + firebaseCrashlyticsVersion) {
+    //     transitive = true
+    // }
 
-    ststableImplementation('com.google.firebase:firebase-crashlytics:' + firebaseCrashlyticsVersion) {
-        transitive = true
-    }
+    // ststableImplementation('com.google.firebase:firebase-crashlytics:' + firebaseCrashlyticsVersion) {
+    //     transitive = true
+    // }
 
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
