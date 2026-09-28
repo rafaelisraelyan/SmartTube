@@ -24,13 +24,19 @@
     android:clipToPadding="false"
     android:paddingStart="12dp"
     android:paddingEnd="12dp"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
+    <!--
+      26dp, not 32dp: the sidebar icons were cropped to their artwork bounds, so
+      each one now fills its box. At 32dp they looked oversized in a 42dp row.
+      The vertical padding was raised 5 -> 8dp to keep the row at 42dp total, which
+      is what the 21dp highlight radius (half the height) depends on.
+    -->
     <ImageView
         android:id="@+id/header_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
         android:layout_gravity="center_vertical"
         android:contentDescription="@string/header_icon" />
 
