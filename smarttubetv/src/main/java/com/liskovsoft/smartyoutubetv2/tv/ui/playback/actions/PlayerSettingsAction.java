@@ -21,10 +21,12 @@ public class PlayerSettingsAction extends Action {
     public PlayerSettingsAction(Context context) {
         super(R.id.action_player_settings);
 
-        // Reuses the existing gear artwork (the one the quality settings used) so
-        // the button matches the rest of the player's icon weight. It is cropped
-        // to its glyph, 0% margins, unlike the settings_* icons in the menus.
-        Drawable icon = ContextCompat.getDrawable(context, R.drawable.settings_hq);
+        // An actual gear. The sidebar's icon_settings.png is the one gear in the
+        // project - the settings_*.png files are category icons, not gears, and
+        // settings_hq.png is the "HQ" mark, which read as a quality button.
+        // Re-drawn onto a 302x302 canvas (the size settings_hq used) with the
+        // glyph filling it, so the button keeps its weight next to play/like.
+        Drawable icon = ContextCompat.getDrawable(context, R.drawable.player_settings_gear);
 
         setIcon(icon);
         setLabel1(context.getString(R.string.player_settings));

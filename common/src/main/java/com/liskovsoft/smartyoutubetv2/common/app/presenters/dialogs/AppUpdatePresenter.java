@@ -5,6 +5,7 @@ import android.content.Context;
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.appupdatechecker2.AppUpdateCheckerListener;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
+import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.smartyoutubetv2.common.R;
 import com.liskovsoft.smartyoutubetv2.common.app.models.errors.ErrorFragmentData;
@@ -25,9 +26,9 @@ import java.util.List;
 public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdateCheckerListener {
     @SuppressLint("StaticFieldLeak")
     private static AppUpdatePresenter sInstance;
+    private static final String TAG = AppUpdatePresenter.class.getSimpleName();
     private final AppUpdateChecker mUpdateChecker;
     private final AppDialogPresenter mSettingsPresenter;
-    private final String[] mUpdateManifestUrls;
     private boolean mIsForceCheck;
     /** GRTubeYou: what the update panel is currently showing. */
     private State mState = State.IDLE;
@@ -45,7 +46,6 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         super(context);
         mUpdateChecker = new AppUpdateChecker(context, this);
         mSettingsPresenter = AppDialogPresenter.instance(context);
-        mUpdateManifestUrls = obtainUpdateManifestUrls(context);
     }
 
     /**
@@ -104,11 +104,25 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
     public void start(boolean forceCheck) {
         mIsForceCheck = forceCheck;
 
+        // GRTubeYou: resolved on every check, not once in the constructor. Building
+        // the URL list there froze two things for the whole life of this presenter:
+        // the channel (so a beta switch flipped while the app was running kept
+        // reading version.json, whose max is below the installed build - the app
+        // then correctly reported "you are up to date") and the cache-busting
+        // timestamp (so a long-lived process kept re-requesting one fixed URL and
+        // could be served a stale copy of it).
+        String[] urls = obtainUpdateManifestUrls(getContext());
+
+        Log.d(TAG, "update check, channel: " + (GlobalPreferences.isBetaChannelEnabled(getContext()) ? "beta" : "stable"));
+        for (String url : urls) {
+            Log.d(TAG, "update check, url: " + url);
+        }
+
         if (forceCheck) {
             LoadingManager.showLoading(getContext(), true);
-            mUpdateChecker.forceCheckForUpdates(mUpdateManifestUrls);
+            mUpdateChecker.forceCheckForUpdates(urls);
         } else {
-            mUpdateChecker.checkForUpdates(mUpdateManifestUrls);
+            mUpdateChecker.checkForUpdates(urls);
         }
     }
 

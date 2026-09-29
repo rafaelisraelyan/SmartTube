@@ -41,6 +41,10 @@ public class OptionCategory {
         return new OptionCategory(null, items, TYPE_SINGLE_BUTTON);
     }
 
+    public static OptionCategory buttonList(CharSequence title, List<OptionItem> items) {
+        return new OptionCategory(title, items, TYPE_BUTTON_LIST);
+    }
+
     public static OptionCategory from(int id, int type, CharSequence title, List<OptionItem> options) {
         return new OptionCategory(title, options, type, id);
     }
@@ -74,6 +78,12 @@ public class OptionCategory {
      * it only reports how far the transfer got.
      */
     public static final int TYPE_UPDATE_PROGRESS = 8;
+    /**
+     * GRTubeYou: a list of rows that run their action on click, rendered inline.
+     * Unlike {@link #TYPE_STRING_LIST}, which opens a second dialog of
+     * checkboxes, this needs no second press.
+     */
+    public static final int TYPE_BUTTON_LIST = 9;
     public final int id;
     public final int type;
     public final CharSequence title;

@@ -6,6 +6,7 @@ import androidx.preference.DialogPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.MultiSelectListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.SwitchPreference;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionCategory;
@@ -68,6 +69,8 @@ public class AppPreferenceManager {
                 return createCommentsPreference(category);
             case OptionCategory.TYPE_UPDATE_PROGRESS:
                 return createUpdateProgressPreference(category);
+            case OptionCategory.TYPE_BUTTON_LIST:
+                return createButtonListPreference(category);
         }
 
         throw  new IllegalStateException("Can't find matched preference for type: " + category.type);
@@ -151,6 +154,38 @@ public class AppPreferenceManager {
         }
 
         return result;
+    }
+
+    /**
+     * GRTubeYou: several rows that each run their action when pressed, all inline.
+     * The framework only knows how to build one inline button per category
+     * (TYPE_SINGLE_BUTTON), and the closest multi-row type, TYPE_STRING_LIST,
+     * opens a second dialog of checkboxes - which made the player settings menu
+     * look right and do nothing when a row was picked.
+     *
+     * <p>Returning a container Preference with the rows added to it keeps the
+     * existing renderer: the rows are ordinary preferences with a click listener,
+     * and AppDialogFragment's fallback already imitates a click on them.
+     */
+    private Preference createButtonListPreference(OptionCategory category) {
+        PreferenceCategory container = new PreferenceCategory(mContext);
+
+        container.setTitle(category.title);
+
+        for (OptionItem item : category.options) {
+            Preference child = new Preference(mContext);
+
+            child.setPersistent(false);
+            child.setTitle(item.getTitle());
+            child.setOnPreferenceClickListener(pref -> {
+                item.onSelect(true);
+                return true;
+            });
+
+            container.addPreference(child);
+        }
+
+        return container;
     }
 
     public Preference createSwitchPreference(OptionCategory category) {

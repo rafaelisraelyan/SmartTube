@@ -509,21 +509,14 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
 
     @Override
     public void updateBadge() {
-        if (getContext() == null) {
-            return;
-        }
-
-        SplashPresenter splashPresenter = SplashPresenter.instance(getContext());
-
-        if (splashPresenter == null) {
-            return;
-        }
-
-        int appLogoRes = Helpers.getThemeAttr(getContext(), R.attr.appLogo);
-
-        Drawable bridgeIcon = Utils.getDrawable(getContext(), splashPresenter.getBridgePackageName(), "app_icon");
-
-        // Top right corner logo
-        setBadgeDrawable(bridgeIcon != null ? bridgeIcon : appLogoRes > 0 ? ContextCompat.getDrawable(getContext(), appLogoRes) : null);
+        // GRTubeYou: the app logo in the top right corner is gone by request.
+        //
+        // Setting it to null is enough and is not the same as "do nothing":
+        // TitleView.updateBadgeVisibility() reacts to a null drawable by hiding
+        // the badge AND showing title_text. That is safe here because the browse
+        // title is never set - the setTitle() call in this fragment is commented
+        // out (see "This title replaces badge in case one is null") - so the text
+        // view stays empty and measures zero width.
+        setBadgeDrawable(null);
     }
 }

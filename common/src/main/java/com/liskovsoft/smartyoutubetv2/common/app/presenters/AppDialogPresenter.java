@@ -183,6 +183,10 @@ public class AppDialogPresenter extends BasePresenter<AppDialogView> {
         mCategories.add(OptionCategory.stringList(categoryTitle, items));
     }
 
+    public void appendButtonListCategory(CharSequence categoryTitle, List<OptionItem> items) {
+        mCategories.add(OptionCategory.buttonList(categoryTitle, items));
+    }
+
     public void appendLongTextCategory(CharSequence categoryTitle, OptionItem item) {
         mCategories.add(OptionCategory.longText(categoryTitle, item));
     }

@@ -62,7 +62,10 @@ public class PlayerSettingsMenuController extends BasePlayerController {
         addItem(R.string.action_playback_queue, R.id.action_playback_queue, null);
         addItem(R.string.player_tweaks, R.id.action_video_stats, null);
 
-        mAppDialogPresenter.appendStringsCategory(
+        // GRTubeYou: buttonList, not strings. appendStringsCategory builds a
+        // multi-select list, so every row opened a second dialog instead of doing
+        // anything - the menu looked right and was dead.
+        mAppDialogPresenter.appendButtonListCategory(
                 getContext().getString(R.string.player_settings), mItems);
 
         // Same as HQDialogController: shrink the video so the dialog does not cover it.

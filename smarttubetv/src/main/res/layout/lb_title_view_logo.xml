@@ -7,7 +7,31 @@
               android:layout_height="wrap_content"
               android:layout_gravity="center_vertical|end"
               android:orientation="horizontal">
-    <!-- Global clock -->
+    <FrameLayout android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_vertical">
+        <ImageView
+            android:id="@+id/title_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/lb_browse_title_icon_height"
+            android:maxWidth="@dimen/lb_browse_title_icon_max_width"
+            android:layout_marginStart="@dimen/search_bar_right_items_margin"
+            android:adjustViewBounds="true"
+            android:src="@null"
+            android:visibility="gone"
+            style="?attr/browseTitleIconStyle"/>
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/lb_browse_title_height"
+            style="?attr/browseTitleTextStyle"/>
+    </FrameLayout>
+
+    <!-- Global clock.
+         GRTubeYou: moved after the badge/title block so the time and date sit in
+         the far right corner. This is a horizontal LinearLayout anchored to the
+         end, so child order alone decides which one ends up on the edge. -->
     <LinearLayout android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center_vertical"
@@ -40,25 +64,4 @@
             style="?attr/browseTitleTextStyle"
             android:visibility="gone" />
     </LinearLayout>
-
-    <FrameLayout android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:layout_gravity="center_vertical">
-        <ImageView
-            android:id="@+id/title_badge"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/lb_browse_title_icon_height"
-            android:maxWidth="@dimen/lb_browse_title_icon_max_width"
-            android:layout_marginStart="@dimen/search_bar_right_items_margin"
-            android:adjustViewBounds="true"
-            android:src="@null"
-            android:visibility="gone"
-            style="?attr/browseTitleIconStyle"/>
-
-        <TextView
-            android:id="@+id/title_text"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/lb_browse_title_height"
-            style="?attr/browseTitleTextStyle"/>
-    </FrameLayout>
 </LinearLayout>
