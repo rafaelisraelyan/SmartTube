@@ -62,11 +62,25 @@ public class PlayerSettingsMenuController extends BasePlayerController {
         addItem(R.string.action_playback_queue, R.id.action_playback_queue, null);
         addItem(R.string.player_tweaks, R.id.action_video_stats, null);
 
-        // GRTubeYou: buttonList, not strings. appendStringsCategory builds a
-        // multi-select list, so every row opened a second dialog instead of doing
-        // anything - the menu looked right and was dead.
-        mAppDialogPresenter.appendButtonListCategory(
-                getContext().getString(R.string.player_settings), mItems);
+        // GRTubeYou: one category per row, TYPE_SINGLE_BUTTON.
+        //
+        // Two earlier shapes both failed here, and neither is obvious:
+        //  - appendStringsCategory builds a MultiSelectListPreference, so a press
+        //    opened a second dialog of checkboxes instead of running the action.
+        //  - a new TYPE_BUTTON_LIST that put the rows into one container
+        //    PreferenceCategory crashed on open, because a PreferenceGroup built
+        //    with `new` has no PreferenceManager and addPreference() needs one to
+        //    hand out a child id (NPE in PreferenceGroup.addPreference).
+        //
+        // A separate single-button category per row needs no container at all:
+        // AppPreferenceFragment adds each one to a real PreferenceScreen, and
+        // AppDialogFragment's fallback already imitates a click on a row that has
+        // a click listener. Passing the rows separately is also what keeps
+        // AppDialogFragment off its "single category" shortcut, which would run
+        // the one row's action immediately without a press.
+        for (OptionItem item : mItems) {
+            mAppDialogPresenter.appendCategory(OptionCategory.singleButton(item));
+        }
 
         // Same as HQDialogController: shrink the video so the dialog does not cover it.
         fitVideoIntoDialog();
