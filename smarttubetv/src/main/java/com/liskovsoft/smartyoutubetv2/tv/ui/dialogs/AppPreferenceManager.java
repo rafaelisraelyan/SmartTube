@@ -83,9 +83,10 @@ public class AppPreferenceManager {
 
         pref.setPersistent(false);
         pref.setLayoutResource(R.layout.update_progress_preference);
-        // Preference is not a View, so there is no setFocusable here - and none is
-        // needed: a non-selectable preference is skipped by the D-pad already.
-        pref.setSelectable(false);
+        // No setSelectable() here: leanback's preference list never reads
+        // isSelectable(), so it would not keep the row out of the D-pad anyway.
+        // UpdateProgressPreference.onBindViewHolder() sets focusability on the view,
+        // and lifts it once the row turns into the install button.
 
         if (category.title != null) {
             pref.setTitle(category.title);

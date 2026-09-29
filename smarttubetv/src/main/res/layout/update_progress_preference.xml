@@ -5,8 +5,13 @@
   It deliberately reuses leanback's own preference metrics and colors
   (lb_preference_item_*) so it does not look like a foreign element next to the
   "Install"/"Download" button and the changelog entries. Clickable and focusable
-  are false: there is nothing to press here, and leaving the row out of the
-  focus chain keeps the D-pad from stopping on a dead target.
+  are false here because while the transfer runs there is nothing to press.
+
+  GRTubeYou: they are NOT what keeps the row out of the D-pad while downloading -
+  UpdateProgressPreference.onBindViewHolder() owns that, and it makes the row
+  focusable again once the file lands and the row becomes the install button.
+  Leaving the focus state to the layout is what left that button visible but
+  unreachable for two releases.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"

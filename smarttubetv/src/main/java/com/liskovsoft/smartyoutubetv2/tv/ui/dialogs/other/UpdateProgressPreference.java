@@ -2,6 +2,8 @@ package com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -44,7 +46,9 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
         mStatus = installText;
 
         setTitle(installText);
-        setSelectable(true);
+        // No setSelectable() here on purpose. It reads like the way to make the row
+        // reachable, but leanback's preference list never consults isSelectable();
+        // focusability is set on the view in onBindViewHolder instead.
         // performClick() runs this listener first and returns early when it returns
         // true, so the install starts here and never reaches onPreferenceDisplayDialog.
         setOnPreferenceClickListener(pref -> {
@@ -107,10 +111,6 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
 
         TextView summary = (TextView) holder.findViewById(android.R.id.summary);
         if (summary != null) {
-            // The row is informative only while it is a progress bar, so keep it out
-            // of the focus chain - otherwise the D-pad stops on a row that does
-            // nothing when pressed. Once the file is ready the row is the install
-            // button and has to be focusable again.
             summary.setVisibility(mPercent >= 0 && !mReady ? android.view.View.VISIBLE : android.view.View.GONE);
         }
 
@@ -128,6 +128,37 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
                 if (percentView != null) {
                     percentView.setText(mPercent + "%");
                 }
+            }
+        }
+
+        // GRTubeYou: focusability lives on the view, not on the Preference.
+        // setSelectable() looks like it would do this, but leanback's preference
+        // list never reads isSelectable() - verified against the AAR - so the row
+        // stayed unreachable by the D-pad even after it had become the install
+        // button. That is a third, independent way the panel could sit on a full
+        // bar with no actionable row, and it survived the two earlier fixes.
+        //
+        // The layout ships focusable="false" because while the transfer runs there
+        // genuinely is nothing to press. Flip it here on every bind: RecyclerView
+        // recycles holders, so the state has to follow the data, not the instance.
+        // androidx.preference 1.1.0 has no public PreferenceViewHolder.itemView
+        // (it only became public in 1.2.0), so the row's root is reached through
+        // the id the layout already puts on it - the same id androidx itself uses
+        // for a preference item container.
+        View itemView = holder.findViewById(R.id.container);
+
+        if (itemView != null) {
+            itemView.setFocusable(mReady);
+            itemView.setClickable(mReady);
+            itemView.setFocusableInTouchMode(false);
+
+            // descendantFocusability lives on ViewGroup, and the row's root is the
+            // LinearLayout from the layout - so the cast is safe, and without it the
+            // row would keep swallowing focus from its own children.
+            if (itemView instanceof ViewGroup) {
+                ((ViewGroup) itemView).setDescendantFocusability(mReady
+                        ? ViewGroup.FOCUS_BEFORE_DESCENDANTS
+                        : ViewGroup.FOCUS_BLOCK_DESCENDANTS);
             }
         }
     }
