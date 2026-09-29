@@ -781,6 +781,7 @@
   <!-- GRTubeYou: voice model toggle -->
   <string name="voice_model_auto_download">Download the 44 MB speech model in the background</string>
   <string name="voice_search_model_disabled">Voice search is off: the model download is switched off in Settings</string>
+  <string name="voice_search_no_system">This device has no system speech recognition. Turn on the offline engine: Settings - Search - Voice search</string>
   <!-- GRTubeYou: the VPN / Proxy tool. proxy_enabled and proxy_type already
        existed for the old web proxy dialog and are reused, so that screen and
        this one always say the same thing. -->

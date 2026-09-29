@@ -95,13 +95,18 @@ public class VoskVoiceSearch implements SpeechRecognitionCallback, VoskModelStor
 
     @Override
     public void recognizeSpeech() {
+        // Every branch is logged. A dead microphone button on a TV box is almost
+        // always one of these four, and without a line saying which one there is
+        // nothing to diagnose from.
         if (mRunning.get()) {
+            Log.d(TAG, "mic pressed while already listening, stopping");
             stop();
             return;
         }
 
         if (mContext.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "mic pressed, RECORD_AUDIO not granted yet");
             mCallback.onVoskNeedsPermission();
             return;
         }
@@ -111,10 +116,13 @@ public class VoskVoiceSearch implements SpeechRecognitionCallback, VoskModelStor
         if (modelDir == null) {
             // Nothing to recognise with. The search screen tells the user the model
             // is on its way instead of leaving the button dead.
+            Log.d(TAG, "mic pressed, no model on disk yet, state="
+                    + VoskModelStore.getState(mContext));
             mCallback.onVoskModelStateChanged(VoskModelStore.getState(mContext));
             return;
         }
 
+        Log.d(TAG, "mic pressed, starting with model at " + modelDir.getAbsolutePath());
         start(modelDir);
     }
 

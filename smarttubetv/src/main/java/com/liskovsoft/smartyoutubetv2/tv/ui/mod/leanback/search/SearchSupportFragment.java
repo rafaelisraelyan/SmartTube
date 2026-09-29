@@ -520,6 +520,7 @@ public class SearchSupportFragment extends Fragment {
     private void attachVoskRecognizer() {
         if (mVoskVoiceSearch == null) {
             mVoskVoiceSearch = VoskSearchBinder.attach(requireContext(), mSearchBar, this::submitQuery);
+            Log.d(TAG, "offline recognizer attached to the search bar");
         }
     }
 
@@ -601,11 +602,25 @@ public class SearchSupportFragment extends Fragment {
     }
 
     private void startRecognitionInt() {
+        // GRTubeYou: the system engines are dead on a TV box without Google
+        // Services. SpeechRecognizer.startListening() fails with "no selected
+        // voice recognition service" and the user sees an orb that does nothing
+        // at all - that is exactly what the offline engine exists to fix, but only
+        // if they are told it exists. Check first and name the way out.
+        if (!isVoskSelected() && !SpeechRecognizer.isRecognitionAvailable(getContext())) {
+            Log.d(TAG, "no system recognition service, the mic would be dead");
+            // Fully qualified on purpose: this file imports androidx.leanback.R, so a
+            // bare R.string would resolve against leanback's resources and not
+            // compile - the line above uses the same spelling.
+            MessageHelpers.showMessage(getContext(), com.liskovsoft.smartyoutubetv2.common.R.string.voice_search_no_system);
+            return;
+        }
+
         try {
             mSearchBar.startRecognition();
         } catch (SecurityException e) {
             // Not allowed to bind to service Intent
-            e.printStackTrace();
+            Log.e(TAG, "not allowed to bind to the recognition service: " + e);
         }
     }
 

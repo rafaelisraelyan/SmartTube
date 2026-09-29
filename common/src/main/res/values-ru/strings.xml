@@ -764,6 +764,7 @@
     <!-- GRTubeYou: тумблер голосовой модели -->
     <string name="voice_model_auto_download">Скачивать модель распознавания (44 МБ) в фоне</string>
     <string name="voice_search_model_disabled">Голосовой поиск выключен: загрузка модели отключена в настройках</string>
+    <string name="voice_search_no_system">На этом устройстве нет системного распознавания речи. Включите офлайн: Настройки - Поиск - Голосовой поиск</string>
     <!-- GRTubeYou: инструмент VPN / Прокси -->
     <string name="proxy_host">Сервер</string>
     <string name="proxy_port">Порт</string>
