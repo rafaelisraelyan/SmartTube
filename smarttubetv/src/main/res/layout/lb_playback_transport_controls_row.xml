@@ -99,15 +99,23 @@
         <RelativeLayout android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layoutDirection="ltr"
-                        android:layout_marginLeft="@dimen/lb_playback_transport_controlbar_margin_start"
-                        tools:ignore="RtlHardcoded" >
+                        tools:ignore="RtlHardcoded">
 
+            <!--
+                GRTubeYou: the transport buttons (previous, play/pause, next) sit in
+                the middle of the screen instead of hugging the left edge.
+
+                The left margin that used to live on this RelativeLayout was dropped
+                rather than compensated: all it did was push the dock off centre. The
+                right hand block (the time) was already flush against the right edge,
+                so it stays exactly where it was and centring the dock moves nothing
+                else.
+            -->
             <FrameLayout
                 android:id="@+id/controls_dock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-            />
+                android:layout_centerHorizontal="true" />
 
             <RelativeLayout android:id="@+id/additional_info"
                             android:layout_width="wrap_content"
