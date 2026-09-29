@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GRTubeYou: row used by the app update panel while the apk is downloading.
+
+  It deliberately reuses leanback's own preference metrics and colors
+  (lb_preference_item_*) so it does not look like a foreign element next to the
+  "Install"/"Download" button and the changelog entries. Clickable and focusable
+  are false: there is nothing to press here, and leaving the row out of the
+  focus chain keeps the D-pad from stopping on a dead target.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:focusable="false"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/lb_preference_item_padding_start"
+    android:paddingEnd="@dimen/lb_preference_item_padding_end">
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="@dimen/lb_preference_item_text_space_top" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@android:id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/lb_preference_item_primary_text_color"
+            android:textSize="@dimen/lb_preference_item_primary_text_size" />
+
+        <TextView
+            android:id="@+id/update_progress_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="@color/lb_preference_item_secondary_text_color"
+            android:textSize="@dimen/lb_preference_item_secondary_text_size" />
+    </LinearLayout>
+
+    <!--
+      max=1000 rather than max=100: the downloader reports whole percents, and
+      a 1000 step scale is what lets a 40 MB transfer move the bar in visible
+      increments instead of jumping a percent at a time.
+    -->
+    <ProgressBar
+        android:id="@+id/update_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="10dp"
+        android:max="1000"
+        android:progress="0"
+        android:progressBackgroundTint="@color/lb_preference_item_secondary_text_color"
+        android:progressTint="@color/lb_preference_item_primary_text_color" />
+
+    <TextView
+        android:id="@android:id/summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-condensed"
+        android:maxLines="2"
+        android:textColor="@color/lb_preference_item_secondary_text_color"
+        android:textSize="@dimen/lb_preference_item_secondary_text_size" />
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="@dimen/lb_preference_item_text_space_bottom" />
+</LinearLayout>

@@ -40,6 +40,7 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.ScreenDimmingAction
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.SeekIntervalAction;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.ShareAction;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.SoundOffAction;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.PlayerSettingsAction;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.VideoInfoAction;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.PipAction;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.PlaybackQueueAction;
@@ -134,6 +135,7 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         putAction(new RotateAction(context));
         putAction(new FlipAction(context));
         putAction(new SoundOffAction(context));
+        putAction(new PlayerSettingsAction(context));
     }
 
     @Override
@@ -236,6 +238,10 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         }
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_VIDEO_STATS)) {
             adapter.add(mActions.get(R.id.action_video_stats));
+        }
+        // GRTubeYou: last on the row, so it reads as "everything else is in here".
+        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_PLAYER_SETTINGS)) {
+            adapter.add(mActions.get(R.id.action_player_settings));
         }
     }
 

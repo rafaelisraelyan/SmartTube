@@ -42,6 +42,10 @@
     <string name="video_buffer_size_highest">Самый высокий</string>
     <string name="update_changelog">Изменения</string>
     <string name="install_update">Установить обновление</string>
+    <string name="download_update">Скачать обновление</string>
+    <string name="update_downloading">Загрузка обновления…</string>
+    <string name="update_download_failed">Не удалось скачать обновление. Попробуйте ещё раз.</string>
+    <string name="player_settings">Настройки</string>
     <string name="section_is_empty">Здесь ничего нет</string>
     <string name="dialog_add_to_playlist">Добавить/Удалить из плейлиста</string>
     <string name="msg_signed_users_only">Необходимо войти в вккаунт</string>

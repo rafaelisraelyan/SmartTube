@@ -8,8 +8,10 @@ import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.smartyoutubetv2.common.R;
 import com.liskovsoft.smartyoutubetv2.common.app.models.errors.ErrorFragmentData;
+import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionCategory;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
+import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UpdateProgressBus;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.AppDialogPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.base.BasePresenter;
@@ -27,6 +29,17 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
     private final AppDialogPresenter mSettingsPresenter;
     private final String[] mUpdateManifestUrls;
     private boolean mIsForceCheck;
+    /** GRTubeYou: what the update panel is currently showing. */
+    private State mState = State.IDLE;
+    private String mVersionName;
+    private List<String> mChangelog;
+
+    private enum State {
+        IDLE,
+        AVAILABLE,
+        DOWNLOADING,
+        READY
+    }
 
     public AppUpdatePresenter(Context context) {
         super(context);
@@ -99,13 +112,39 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         }
     }
 
+    /**
+     * GRTubeYou: a newer version is known, but nothing has been downloaded yet.
+     * This is the point where the panel can finally show something useful: what
+     * changed, and a button that actually fetches the file.
+     */
+    @Override
+    public void onUpdateAvailable(String versionName, List<String> changelog) {
+        mVersionName = versionName;
+        mChangelog = changelog;
+
+        // The spinner stood in for the whole transfer; the panel takes over now.
+        LoadingManager.showLoading(getContext(), false);
+
+        if (canShowUpdateDialog()) {
+            showUpdatePanel(State.AVAILABLE);
+        } else {
+            pinDownloadCard();
+        }
+    }
+
+    @Override
+    public void onDownloadProgress(int percent) {
+        // A dropped value is fine - it just means the panel is not on screen.
+        UpdateProgressBus.push(percent, getContext().getString(R.string.update_downloading));
+    }
+
     @Override
     public void onUpdateFound(String versionName, List<String> changelog, String apkPath) {
-        if (mIsForceCheck) {
-            LoadingManager.showLoading(getContext(), false);
-            showUpdateDialog(versionName, changelog, apkPath);
-        } else if (GeneralData.instance(getContext()).isOldUpdateNotificationsEnabled()) {
-            showUpdateDialog(versionName, changelog, apkPath);
+        mVersionName = versionName;
+        mChangelog = changelog;
+
+        if (canShowUpdateDialog()) {
+            showUpdatePanel(State.READY);
         } else {
             pinUpdateSection(versionName, changelog, apkPath);
         }
@@ -115,7 +154,20 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
     public void onUpdateError(Exception error) {
         if (mIsForceCheck) {
             LoadingManager.showLoading(getContext(), false);
+        }
 
+        if (mState == State.DOWNLOADING) {
+            // A failed transfer should leave the user able to try again, not stuck
+            // on a bar that stopped moving.
+            mState = State.AVAILABLE;
+            MessageHelpers.showMessage(getContext(), R.string.update_download_failed);
+            showUpdatePanel(State.AVAILABLE);
+            onFinish();
+
+            return;
+        }
+
+        if (mIsForceCheck) {
             if (AppUpdateCheckerListener.LATEST_VERSION.equals(error.getMessage())) {
                 MessageHelpers.showMessage(getContext(), R.string.update_not_found);
             } else {
@@ -127,24 +179,91 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         onFinish();
     }
 
-    private void showUpdateDialog(String versionName, List<String> changelog, String apkPath) {
+    private boolean canShowUpdateDialog() {
         // Don't show update dialog if the player opened or the app is collapsed
         if (getContext() == null || getViewManager().isPlayerInForeground() || !Utils.isAppInForegroundFixed()) {
+            return false;
+        }
+
+        // A silent boot check only interrupts the user when they asked to hear about
+        // updates; otherwise the update waits as a card on the browse screen.
+        return mIsForceCheck || GeneralData.instance(getContext()).isOldUpdateNotificationsEnabled();
+    }
+
+    /**
+     * GRTubeYou: the update panel. Same dialog as before, but the single button
+     * now reflects the state, and while the file is on its way it is replaced by a
+     * progress row instead of leaving the user with a spinner.
+     */
+    private void showUpdatePanel(State state) {
+        mState = state;
+
+        if (getContext() == null) {
             return;
         }
 
-        mSettingsPresenter.appendSingleButton(
-                UiOptionItem.from(getContext().getString(R.string.install_update), optionItem -> {
-                    GeneralData.instance(getContext()).setChangelog(changelog);
-                    mUpdateChecker.installUpdate();
-                }, false));
-        mSettingsPresenter.appendStringsCategory(getContext().getString(R.string.update_changelog), createChangelogOptions(changelog));
-        //mSettingsPresenter.appendSingleSwitch(UiOptionItem.from(getContext().getString(R.string.show_again), optionItem -> {
-        //    mUpdateChecker.enableUpdateCheck(optionItem.isSelected());
-        //}, mUpdateChecker.isUpdateCheckEnabled()));
+        switch (state) {
+            case DOWNLOADING:
+                mSettingsPresenter.appendCategory(OptionCategory.from(-1, OptionCategory.TYPE_UPDATE_PROGRESS,
+                        getContext().getString(R.string.update_downloading), UiOptionItem.from("")));
+                break;
+            case READY:
+                mSettingsPresenter.appendSingleButton(
+                        UiOptionItem.from(getContext().getString(R.string.install_update), optionItem -> {
+                            GeneralData.instance(getContext()).setChangelog(mChangelog);
+                            mUpdateChecker.installUpdate();
+                        }, false));
+                break;
+            case AVAILABLE:
+            default:
+                mSettingsPresenter.appendSingleButton(
+                        UiOptionItem.from(getContext().getString(R.string.download_update), optionItem -> {
+                            mState = State.DOWNLOADING;
+                            mUpdateChecker.startDownload();
+                            showUpdatePanel(State.DOWNLOADING);
+                        }, false));
+                break;
+        }
 
-        //mSettingsPresenter.setOnFinish(getOnFinish());
-        mSettingsPresenter.showDialog(String.format("%s %s", getContext().getString(R.string.app_name), versionName), AppUpdatePresenter::unhold);
+        mSettingsPresenter.appendStringsCategory(getContext().getString(R.string.update_changelog), createChangelogOptions(mChangelog));
+
+        mSettingsPresenter.showDialog(
+                String.format("%s %s", getContext().getString(R.string.app_name), mVersionName),
+                () -> {
+                    UpdateProgressBus.clear();
+                    AppUpdatePresenter.unhold();
+                });
+    }
+
+    /**
+     * GRTubeYou: silent check, update notices off. The card opens the panel instead
+     * of installing straight away, so the download is never invisible.
+     */
+    private void pinDownloadCard() {
+        if (getContext() == null) {
+            return;
+        }
+
+        BrowsePresenter.instance(getContext()).pinItem(getContext().getString(R.string.update_found), R.drawable.action_info, new ErrorFragmentData() {
+            @Override
+            public void onAction() {
+                mState = State.DOWNLOADING;
+                mUpdateChecker.startDownload();
+                showUpdatePanel(State.DOWNLOADING);
+            }
+
+            @Override
+            public String getMessage() {
+                return String.format("%s %s", getContext().getString(R.string.app_name), mVersionName) + " " +
+                        getContext().getString(R.string.update_changelog) + ":\n" +
+                        createChangelog(mChangelog);
+            }
+
+            @Override
+            public String getActionText() {
+                return getContext().getString(R.string.download_update);
+            }
+        });
     }
 
     private void pinUpdateSection(String versionName, List<String> changelog, String apkPath) {

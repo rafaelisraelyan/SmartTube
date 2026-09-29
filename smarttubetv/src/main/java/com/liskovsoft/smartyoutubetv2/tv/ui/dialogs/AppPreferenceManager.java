@@ -15,6 +15,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.ChatPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.CommentsPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.StringListPreference;
+import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.UpdateProgressPreference;
 
 import java.util.HashSet;
 import java.util.List;
@@ -65,9 +66,32 @@ public class AppPreferenceManager {
                 return createChatPreference(category);
             case OptionCategory.TYPE_COMMENTS:
                 return createCommentsPreference(category);
+            case OptionCategory.TYPE_UPDATE_PROGRESS:
+                return createUpdateProgressPreference(category);
         }
 
         throw  new IllegalStateException("Can't find matched preference for type: " + category.type);
+    }
+
+    /**
+     * GRTubeYou: the download progress row of the app update panel. The title
+     * doubles as the status line, so nothing else is needed here - the presenter
+     * pushes both through UpdateProgressPreference#setProgress.
+     */
+    private Preference createUpdateProgressPreference(OptionCategory category) {
+        UpdateProgressPreference pref = new UpdateProgressPreference(mContext);
+
+        pref.setPersistent(false);
+        pref.setLayoutResource(R.layout.update_progress_preference);
+        // Preference is not a View, so there is no setFocusable here - and none is
+        // needed: a non-selectable preference is skipped by the D-pad already.
+        pref.setSelectable(false);
+
+        if (category.title != null) {
+            pref.setTitle(category.title);
+        }
+
+        return pref;
     }
 
     private Preference createStringListPreference(OptionCategory category) {

@@ -43,11 +43,24 @@ public class PlayerTweaksData implements ProfileChangeListener {
     public static final int PLAYER_BUTTON_SOUND_OFF = 1 << 25;
     public static final int PLAYER_BUTTON_AFR = 1 << 26;
     public static final int PLAYER_BUTTON_VIDEO_FLIP = 1 << 27;
-    public static final int PLAYER_BUTTON_DEFAULT = PLAYER_BUTTON_SEARCH | PLAYER_BUTTON_PIP | PLAYER_BUTTON_SCREEN_DIMMING | PLAYER_BUTTON_VIDEO_SPEED |
-            PLAYER_BUTTON_VIDEO_STATS | PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBTITLES | PLAYER_BUTTON_SUBSCRIBE |
-            PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_ADD_TO_PLAYLIST | PLAYER_BUTTON_PLAY_PAUSE |
-            PLAYER_BUTTON_REPEAT_MODE | PLAYER_BUTTON_NEXT | PLAYER_BUTTON_PREVIOUS | PLAYER_BUTTON_HIGH_QUALITY |
-            PLAYER_BUTTON_VIDEO_INFO | PLAYER_BUTTON_CHAT;
+    /** GRTubeYou: the gear button that opens the player settings menu. */
+    public static final int PLAYER_BUTTON_PLAYER_SETTINGS = 1 << 28;
+    /**
+     * GRTubeYou: trimmed down default. The player used to enable 19 buttons, so
+     * the two control rows were two full screens of icons and the useful ones were
+     * hard to find.
+     *
+     * <p>Kept on the rows: play/pause, previous, next, channel, like, dislike,
+     * subscribe. Everything else moved behind the gear button, which opens
+     * {@code PlayerSettingsPresenter} - speed, quality, subtitles, repeat, PiP,
+     * description, comments, queue, screen dimming, search and the report dialog.
+     *
+     * <p>Nothing was deleted. These flags still gate each button, so anyone can
+     * switch any of them back on in Settings -> Player -> Buttons.
+     */
+    public static final int PLAYER_BUTTON_DEFAULT = PLAYER_BUTTON_PLAY_PAUSE | PLAYER_BUTTON_PREVIOUS |
+            PLAYER_BUTTON_NEXT | PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBSCRIBE |
+            PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_PLAYER_SETTINGS;
     public static final int DNS_TYPE_SYSTEM = GlobalPreferences.DNS_TYPE_SYSTEM;
     public static final int DNS_TYPE_IPV4 = GlobalPreferences.DNS_TYPE_IPV4;
     public static final int DNS_TYPE_GOOGLE = GlobalPreferences.DNS_TYPE_GOOGLE;

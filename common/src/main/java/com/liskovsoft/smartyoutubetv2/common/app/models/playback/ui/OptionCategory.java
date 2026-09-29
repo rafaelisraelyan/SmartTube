@@ -68,6 +68,12 @@ public class OptionCategory {
     public static final int TYPE_LONG_TEXT = 5;
     public static final int TYPE_CHAT = 6;
     public static final int TYPE_COMMENTS = 7;
+    /**
+     * GRTubeYou: an inline row with a progress bar, used by the app update panel
+     * while the apk is downloading. It is not clickable and never opens a dialog -
+     * it only reports how far the transfer got.
+     */
+    public static final int TYPE_UPDATE_PROGRESS = 8;
     public final int id;
     public final int type;
     public final CharSequence title;

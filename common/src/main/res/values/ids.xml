@@ -7,6 +7,10 @@
     <item name="action_video_zoom" type="id"/>
     <item name="action_playlist_add" type="id"/>
     <item name="action_video_stats" type="id"/>
+    <!-- GRTubeYou: opens the player settings menu, which holds everything that
+         used to sit on the control rows (speed, quality, subtitles, repeat, PiP,
+         description, comments, queue, report). -->
+    <item name="action_player_settings" type="id"/>
     <item name="action_video_speed" type="id"/>
     <item name="action_repeat" type="id"/>
     <item name="action_search" type="id"/>

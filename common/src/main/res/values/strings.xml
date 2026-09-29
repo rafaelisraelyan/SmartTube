@@ -43,6 +43,14 @@
     <string name="video_buffer_size_highest">Highest</string>
     <string name="update_changelog">Changelog</string>
     <string name="install_update">Install update</string>
+    <!-- GRTubeYou: app update panel. The updater used to fetch the apk on its own,
+         so the user saw a spinner and then a bare "Install" button. Now the panel
+         offers the download and reports its progress. -->
+    <string name="download_update">Download update</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_download_failed">Update download failed. Try again.</string>
+    <!-- GRTubeYou: label of the gear button that replaced the crowded player rows -->
+    <string name="player_settings">Settings</string>
     <string name="section_is_empty">Oops! There is nothing in here</string>
     <string name="dialog_add_to_playlist">Add/Remove from playlist</string>
     <string name="msg_signed_users_only">Signed users only</string>

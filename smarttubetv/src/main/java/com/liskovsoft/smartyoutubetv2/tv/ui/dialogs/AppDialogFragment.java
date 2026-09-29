@@ -31,6 +31,7 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.CommentsPreferenceDial
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.RadioListPreferenceDialogFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.StringListPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.StringListPreferenceDialogFragment;
+import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.UpdateProgressPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.preference.LeanbackListPreferenceDialogFragment;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 
@@ -190,6 +191,11 @@ public class AppDialogFragment extends LeanbackSettingsFragment implements AppDi
             startPreferenceFragment(f);
 
             return true;
+        } else if (pref instanceof UpdateProgressPreference) {
+            // GRTubeYou: the update download row is pure information. Returning
+            // false stops the click from reaching the fallback below, which would
+            // otherwise try to open a dialog for a row that is not actionable.
+            return false;
         } else if (pref instanceof MultiSelectListPreference) {
             MultiSelectListPreference listPreference = (MultiSelectListPreference) pref;
             LeanbackListPreferenceDialogFragment f = LeanbackListPreferenceDialogFragment.newInstanceMulti(listPreference.getKey());
