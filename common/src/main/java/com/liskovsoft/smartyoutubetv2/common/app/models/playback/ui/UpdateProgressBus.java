@@ -35,12 +35,30 @@ public final class UpdateProgressBus {
     private static Target sTarget;
     private static Runnable sInstallAction;
 
+    /**
+     * GRTubeYou: the file is on disk, whatever happens to the row.
+     *
+     * <p>Held here rather than only being pushed, because a single live target is
+     * not enough: the dialog is rebuilt between states, and its onFinish calls
+     * {@link #clear()}. The download finishing could therefore arrive after the
+     * row had been torn down, and the signal was simply dropped - which is how
+     * the panel managed to sit on a 100% bar with nothing to press. Keeping the
+     * fact here makes the order irrelevant: a row that appears later is told on
+     * registration, and one that is already there is told immediately.
+     */
+    private static boolean sReady;
+    private static CharSequence sInstallText;
+
     private UpdateProgressBus() {
     }
 
     /** Called by the row when it is created. */
     public static void setTarget(Target target) {
         sTarget = target;
+
+        if (sReady && sInstallText != null) {
+            target.onUpdateReady(sInstallText);
+        }
     }
 
     /**
@@ -56,6 +74,17 @@ public final class UpdateProgressBus {
     public static void clear() {
         sTarget = null;
         sInstallAction = null;
+        // sReady deliberately survives: the apk is on disk and stays installable
+        // however often the panel is rebuilt.
+    }
+
+    /**
+     * A new transfer started, so nothing is installable yet.
+     */
+    public static void reset() {
+        sReady = false;
+        sInstallText = null;
+        sTarget = null;
     }
 
     /**
@@ -70,6 +99,9 @@ public final class UpdateProgressBus {
     }
 
     public static void pushReady(CharSequence installText) {
+        sReady = true;
+        sInstallText = installText;
+
         Target target = sTarget;
 
         if (target != null) {

@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
+import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UpdateProgressBus;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
@@ -21,6 +22,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * {@link #setProgress(int, CharSequence)}, which re-binds only this row.
  */
 public class UpdateProgressPreference extends Preference implements UpdateProgressBus.Target {
+    private static final String TAG = UpdateProgressPreference.class.getSimpleName();
     /** Same scale as {@code update_progress_bar} max, see the layout. */
     private static final int MAX_STEPS = 1000;
     private int mPercent = -1;
@@ -35,6 +37,8 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
 
     @Override
     public void onUpdateReady(CharSequence installText) {
+        Log.d(TAG, "download finished, this row becomes the install button: " + installText);
+
         mReady = true;
         mPercent = -1;
         mStatus = installText;
@@ -66,8 +70,11 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
     public UpdateProgressPreference(Context context) {
         super(context);
         // Registered at creation, not at the first progress tick: the presenter
-        // may push a value for a panel that has not moved yet.
+        // may push a value for a panel that has not moved yet. The bus replays the
+        // ready state on registration, so a row built after the download finished
+        // also comes up as the install button.
         UpdateProgressBus.setTarget(this);
+        Log.d(TAG, "progress row created, ready=" + mReady);
     }
 
     /**

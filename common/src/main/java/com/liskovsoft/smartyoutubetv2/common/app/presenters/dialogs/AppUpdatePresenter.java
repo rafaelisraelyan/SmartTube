@@ -173,8 +173,15 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         UpdateProgressBus.pushReady(getContext().getString(R.string.install_update));
 
         if (canShowUpdateDialog()) {
+            Log.d(TAG, "update ready, rebuilding the panel as installable");
             showUpdatePanel(State.READY);
         } else {
+            // canShowUpdateDialog() false means the app is not in the foreground or
+            // the player is open, which is exactly what happened on the TV: the
+            // dialog stayed on a full bar and the card the user could actually see
+            // still offered "Download". The row now flips itself, but say which
+            // branch was taken, because this one has been wrong twice.
+            Log.d(TAG, "update ready, cannot show the dialog, pinning the install card");
             pinUpdateSection(versionName, changelog, apkPath);
         }
     }
@@ -248,6 +255,9 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
                 mSettingsPresenter.appendSingleButton(
                         UiOptionItem.from(getContext().getString(R.string.download_update), optionItem -> {
                             mState = State.DOWNLOADING;
+                            // A new transfer: whatever was installable before is not
+                            // any more, and the row must not start out as a button.
+                            UpdateProgressBus.reset();
                             mUpdateChecker.startDownload();
                             showUpdatePanel(State.DOWNLOADING);
                         }, false));
@@ -277,6 +287,7 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
             @Override
             public void onAction() {
                 mState = State.DOWNLOADING;
+                UpdateProgressBus.reset();
                 mUpdateChecker.startDownload();
                 showUpdatePanel(State.DOWNLOADING);
             }
