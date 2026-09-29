@@ -25,10 +25,30 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
     private static final int MAX_STEPS = 1000;
     private int mPercent = -1;
     private CharSequence mStatus;
+    /** GRTubeYou: the file is on disk, the row acts as the install button. */
+    private boolean mReady;
 
     @Override
     public void onUpdateProgress(int percent, CharSequence status) {
         setProgress(percent, status);
+    }
+
+    @Override
+    public void onUpdateReady(CharSequence installText) {
+        mReady = true;
+        mPercent = -1;
+        mStatus = installText;
+
+        setTitle(installText);
+        setSelectable(true);
+        // performClick() runs this listener first and returns early when it returns
+        // true, so the install starts here and never reaches onPreferenceDisplayDialog.
+        setOnPreferenceClickListener(pref -> {
+            UpdateProgressBus.runInstallAction();
+            return true;
+        });
+
+        notifyChanged();
     }
 
     public UpdateProgressPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -55,7 +75,13 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
      * @param status  line under the bar, e.g. the transferred/total size
      */
     public void setProgress(int percent, CharSequence status) {
-        mPercent = percent;
+        // A late progress tick must not undo a finished download: the ordering of
+        // the last tick and the completion callback is not guaranteed, and losing
+        // the ready state is what strands the user on a full bar.
+        if (mReady) {
+            return;
+        }
+
         mPercent = percent;
         mStatus = status;
         // Re-binds this single row instead of redrawing the whole dialog, so the
@@ -74,16 +100,18 @@ public class UpdateProgressPreference extends Preference implements UpdateProgre
 
         TextView summary = (TextView) holder.findViewById(android.R.id.summary);
         if (summary != null) {
-            // The row is informative only, so keep it out of the focus chain -
-            // otherwise the D-pad stops on a row that does nothing when pressed.
-            summary.setVisibility(mPercent >= 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+            // The row is informative only while it is a progress bar, so keep it out
+            // of the focus chain - otherwise the D-pad stops on a row that does
+            // nothing when pressed. Once the file is ready the row is the install
+            // button and has to be focusable again.
+            summary.setVisibility(mPercent >= 0 && !mReady ? android.view.View.VISIBLE : android.view.View.GONE);
         }
 
         ProgressBar bar = (ProgressBar) holder.findViewById(R.id.update_progress_bar);
         if (bar != null) {
-            bar.setVisibility(mPercent >= 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+            bar.setVisibility(mPercent >= 0 && !mReady ? android.view.View.VISIBLE : android.view.View.GONE);
 
-            if (mPercent >= 0) {
+            if (mPercent >= 0 && !mReady) {
                 int steps = mPercent * MAX_STEPS / 100;
                 // animate=true: without it the bar snaps between values, which
                 // looks broken when the transfer only ticks a few times a second.

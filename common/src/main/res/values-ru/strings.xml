@@ -503,6 +503,15 @@
     <string name="speech_recognizer_system">Системный (наилучший)</string>
     <string name="speech_recognizer_external_1">Внешний 1 (серьезно забагован, для работы нужно отключить доступ к микрофону)</string>
     <string name="speech_recognizer_external_2">Внешний 2 (серьезно забагован)</string>
+    <!-- GRTubeYou: офлайн-распознавание -->
+    <string name="speech_recognizer_vosk">Офлайн, русский (модель скачивается при первом запуске)</string>
+    <string name="voice_search_preparing">Готовим голосовой ввод…</string>
+    <string name="voice_search_downloading">Качаем голосовую модель…</string>
+    <string name="voice_search_model_failed">Не удалось скачать голосовую модель</string>
+    <string name="voice_search_no_microphone">Микрофон пульта недоступен приложению</string>
+    <string name="voice_search_need_permission">Разрешите доступ к микрофону для голосового поиска</string>
+    <string name="voice_search_nothing_heard">Ничего не расслышали</string>
+    <string name="voice_search_failed">Голосовой поиск не сработал</string>
     <string name="real_channel_icon">Показать иконку на кнопке канала</string>
     <string name="subtitle_yellow_semi_transparent">Жёлтые на полупрозрачном фоне</string>
     <string name="subtitle_yellow_black">Жёлтые на чёрном фоне</string>

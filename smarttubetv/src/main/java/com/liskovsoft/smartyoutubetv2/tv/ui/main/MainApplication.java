@@ -32,6 +32,7 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.playback.PlaybackActivity;
 import com.liskovsoft.smartyoutubetv2.tv.ui.search.tags.SearchTagsActivity;
 import com.liskovsoft.smartyoutubetv2.tv.ui.signin.SignInActivity;
 import com.liskovsoft.smartyoutubetv2.tv.ui.webbrowser.WebBrowserActivity;
+import com.liskovsoft.smartyoutubetv2.tv.utils.vosk.VoskModelStore;
 
 import org.conscrypt.Conscrypt;
 
@@ -83,6 +84,13 @@ public class MainApplication extends MultiDexApplication { // fix: Didn't find c
 
         setupGlobalExceptionHandler();
         setupViewManager();
+
+        // GRTubeYou: pull the offline speech model in the background on first run.
+        // Deliberately not triggered by the microphone button - a 44 MB wait is
+        // not something to discover at the moment you want to talk. Safe to call
+        // on every start: it returns immediately when the model is already there
+        // or a transfer is still running.
+        VoskModelStore.ensureModel(this);
     }
 
     private void setupViewManager() {

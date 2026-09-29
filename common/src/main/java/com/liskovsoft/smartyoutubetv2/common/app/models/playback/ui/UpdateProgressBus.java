@@ -18,9 +18,22 @@ package com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui;
 public final class UpdateProgressBus {
     public interface Target {
         void onUpdateProgress(int percent, CharSequence status);
+
+        /**
+         * GRTubeYou: the file is on disk and can be installed.
+         *
+         * <p>Deliberately separate from {@link #onUpdateProgress}: the progress
+         * row used to stay stuck at 100% because "ready" only ever reached the UI
+         * by rebuilding the whole dialog, and that rebuild is conditional. When the
+         * condition failed the download had succeeded and the user was left looking
+         * at a full bar with nothing to press. The row now turns into the install
+         * button itself, so completion never depends on the dialog being rebuilt.
+         */
+        void onUpdateReady(CharSequence installText);
     }
 
     private static Target sTarget;
+    private static Runnable sInstallAction;
 
     private UpdateProgressBus() {
     }
@@ -30,9 +43,19 @@ public final class UpdateProgressBus {
         sTarget = target;
     }
 
+    /**
+     * GRTubeYou: how the row starts the installer. The row lives in {@code smarttubetv}
+     * and the checker that owns the apk in {@code common}, so the action is handed
+     * over instead of being called across the module boundary.
+     */
+    public static void setInstallAction(Runnable action) {
+        sInstallAction = action;
+    }
+
     /** Called when the panel is torn down, so nothing keeps the row alive. */
     public static void clear() {
         sTarget = null;
+        sInstallAction = null;
     }
 
     /**
@@ -43,6 +66,22 @@ public final class UpdateProgressBus {
 
         if (target != null) {
             target.onUpdateProgress(percent, status);
+        }
+    }
+
+    public static void pushReady(CharSequence installText) {
+        Target target = sTarget;
+
+        if (target != null) {
+            target.onUpdateReady(installText);
+        }
+    }
+
+    public static void runInstallAction() {
+        Runnable action = sInstallAction;
+
+        if (action != null) {
+            action.run();
         }
     }
 }

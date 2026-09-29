@@ -41,8 +41,11 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.helpers.KeyHelpers;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.SearchPresenter;
+import com.liskovsoft.smartyoutubetv2.common.prefs.SearchData;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
+import com.liskovsoft.smartyoutubetv2.tv.utils.vosk.VoskSearchBinder;
+import com.liskovsoft.smartyoutubetv2.tv.utils.vosk.VoskVoiceSearch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -232,6 +235,9 @@ public class SearchSupportFragment extends Fragment {
     private boolean mIsTypingCorrectionDisabled;
 
     private SpeechRecognizer mSpeechRecognizer;
+
+    /** GRTubeYou: offline voice search. Null unless that engine is selected. */
+    private VoskVoiceSearch mVoskVoiceSearch;
 
     int mStatus;
     boolean mAutoStartRecognition = false; // MOD: don't start search immediately
@@ -486,7 +492,9 @@ public class SearchSupportFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (mSpeechRecognitionCallback == null && null == mSpeechRecognizer) {
+        if (isVoskSelected()) {
+            attachVoskRecognizer();
+        } else if (mSpeechRecognitionCallback == null && null == mSpeechRecognizer) {
             mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(
                     getContext());
             mSearchBar.setSpeechRecognizer(mSpeechRecognizer);
@@ -502,9 +510,43 @@ public class SearchSupportFragment extends Fragment {
         }
     }
 
+    /**
+     * GRTubeYou: hands the microphone orb to the offline recognizer.
+     *
+     * <p>All of the wiring lives in {@link VoskSearchBinder} - the same three lines
+     * are needed by the channel header and by the tag search, and the microphone
+     * handling is the part most likely to be got wrong.
+     */
+    private void attachVoskRecognizer() {
+        if (mVoskVoiceSearch == null) {
+            mVoskVoiceSearch = VoskSearchBinder.attach(requireContext(), mSearchBar, this::submitQuery);
+        }
+    }
+
+    private boolean isVoskSelected() {
+        return SearchData.instance(requireContext()).getSpeechRecognizerType()
+                == SearchData.SPEECH_RECOGNIZER_VOSK;
+    }
+
+    /**
+     * GRTubeYou: the bar, for subclasses that install their own recognizer.
+     * {@link #mSearchBar} is package-private, so the tag search - which lives in
+     * another package - had no way to reach the bar leanback gives it no API for.
+     */
+    public SearchBar getSearchBarInternal() {
+        return mSearchBar;
+    }
+
     @Override
     public void onPause() {
         releaseRecognizer();
+
+        // GRTubeYou: stop the offline recognizer too, otherwise it keeps the
+        // microphone open after the search screen is gone.
+        if (mVoskVoiceSearch != null) {
+            mVoskVoiceSearch.stop();
+        }
+
         super.onPause();
     }
 

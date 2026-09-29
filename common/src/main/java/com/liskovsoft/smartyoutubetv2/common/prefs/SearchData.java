@@ -8,6 +8,13 @@ public class SearchData {
     public static final int SPEECH_RECOGNIZER_SYSTEM = 0;
     public static final int SPEECH_RECOGNIZER_INTENT = 1;
     public static final int SPEECH_RECOGNIZER_GOTEV = 2;
+    /**
+     * GRTubeYou: offline recognition on the device, Russian only.
+     * The only engine that works on a TV box without Google Services, where the
+     * system recognizer has no service to bind to. Needs a model that is fetched
+     * in the background on first run - see VoskModelStore.
+     */
+    public static final int SPEECH_RECOGNIZER_VOSK = 3;
     private static final String SEARCH_DATA = "search_data";
     @SuppressLint("StaticFieldLeak")
     private static SearchData sInstance;

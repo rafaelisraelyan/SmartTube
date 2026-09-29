@@ -513,6 +513,16 @@
     <string name="speech_recognizer_system">System (preferred)</string>
     <string name="speech_recognizer_external_1">External 1 (seriously bugged, in order to work you need to disable access to the microphone)</string>
     <string name="speech_recognizer_external_2">External 2 (seriously bugged)</string>
+  <!-- GRTubeYou: offline recognition. The model is fetched on first run, which is
+       why the entry says so instead of pretending to work immediately. -->
+  <string name="speech_recognizer_vosk">Offline, Russian (model downloads on first run)</string>
+  <string name="voice_search_preparing">Preparing voice input…</string>
+  <string name="voice_search_downloading">Downloading the voice model…</string>
+  <string name="voice_search_model_failed">Could not download the voice model</string>
+  <string name="voice_search_no_microphone">The remote microphone is not available to the app</string>
+  <string name="voice_search_need_permission">Allow the microphone to use voice search</string>
+  <string name="voice_search_nothing_heard">Nothing was heard</string>
+  <string name="voice_search_failed">Voice search failed</string>
     <string name="real_channel_icon">Show icon on the channel button</string>
     <string name="subtitle_yellow_semi_transparent">Yellow on semitransparent background</string>
     <string name="subtitle_yellow_black">Yellow on black background</string>

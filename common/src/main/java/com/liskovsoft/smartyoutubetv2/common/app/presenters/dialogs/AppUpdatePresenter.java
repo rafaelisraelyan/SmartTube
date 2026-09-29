@@ -157,6 +157,21 @@ public class AppUpdatePresenter extends BasePresenter<Void> implements AppUpdate
         mVersionName = versionName;
         mChangelog = changelog;
 
+        // GRTubeYou: arm the row BEFORE trying to rebuild the dialog.
+        //
+        // The rebuild below is conditional (canShowUpdateDialog), and the panel used
+        // to have no other way to reach the "install" state. When the condition came
+        // back false at the moment the file finished, the code quietly pinned a card
+        // on the browse screen instead - invisible behind the dialog the user was
+        // actually looking at - and the panel sat on a 100% bar forever with nothing
+        // to press. The row turns itself into the install button, so completion no
+        // longer depends on the dialog being rebuilt at all.
+        UpdateProgressBus.setInstallAction(() -> {
+            GeneralData.instance(getContext()).setChangelog(mChangelog);
+            mUpdateChecker.installUpdate();
+        });
+        UpdateProgressBus.pushReady(getContext().getString(R.string.install_update));
+
         if (canShowUpdateDialog()) {
             showUpdatePanel(State.READY);
         } else {

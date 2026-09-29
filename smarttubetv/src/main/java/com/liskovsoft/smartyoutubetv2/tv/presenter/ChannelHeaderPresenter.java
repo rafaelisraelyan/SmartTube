@@ -32,6 +32,7 @@ import com.liskovsoft.smartyoutubetv2.common.prefs.SearchData;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
+import com.liskovsoft.smartyoutubetv2.tv.utils.vosk.VoskSearchBinder;
 
 import net.gotev.speech.GoogleVoiceTypingDisabledException;
 import net.gotev.speech.Speech;
@@ -173,6 +174,10 @@ public class ChannelHeaderPresenter extends RowPresenter {
                 searchBar.setSpeechRecognizer(null);
                 Speech.init(context);
                 searchBar.setSpeechRecognitionCallback(new GotevCallback(context, provider, searchBar, speechOrbView));
+                break;
+            case SearchData.SPEECH_RECOGNIZER_VOSK:
+                // GRTubeYou: offline recognition, same wiring as the other two bars.
+                VoskSearchBinder.attach(context, searchBar, query -> submitQuery(provider, query));
                 break;
         }
         searchBar.setSearchBarListener(new SearchBar.SearchBarListener() {

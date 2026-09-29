@@ -68,8 +68,8 @@ android {
         applicationId "app.smarttube"
         minSdkVersion project.properties.minSdkVersion
         targetSdkVersion project.properties.targetSdkVersion
-        versionCode 2465
-        versionName "32.65 beta8"
+        versionCode 2466
+        versionName "32.65 beta9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
 
@@ -262,6 +262,11 @@ dependencies {
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
     implementation 'net.gotev:speech:' + gotevSpeechVersion
+
+    // GRTubeYou: offline Russian voice search. See voskVersion in constants.gradle.
+    // The acoustic model is NOT bundled here (~44 MB); it is fetched in the
+    // background on first run from GitHub Releases, see VoskModelStore.
+    implementation 'com.alphacephei:vosk-android:' + voskVersion
 
     // GRTubeYou: Compose for TV. Deliberately NOT using activity-compose -
     // this module runs on a plain FragmentActivity (not ComponentActivity), so

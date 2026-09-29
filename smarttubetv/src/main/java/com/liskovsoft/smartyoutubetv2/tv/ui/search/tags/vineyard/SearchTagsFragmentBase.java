@@ -31,6 +31,7 @@ import com.liskovsoft.smartyoutubetv2.tv.presenter.base.OnItemLongPressedListene
 import com.liskovsoft.smartyoutubetv2.tv.presenter.vineyard.TagPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.misc.ProgressBarManager;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.search.SearchSupportFragment;
+import com.liskovsoft.smartyoutubetv2.tv.utils.vosk.VoskSearchBinder;
 
 import net.gotev.speech.GoogleVoiceTypingDisabledException;
 import net.gotev.speech.Speech;
@@ -170,6 +171,11 @@ public abstract class SearchTagsFragmentBase extends SearchSupportFragment
             case SearchData.SPEECH_RECOGNIZER_GOTEV:
                 Speech.init(getContext());
                 setSpeechRecognitionCallback(mGotevCallback);
+                break;
+            case SearchData.SPEECH_RECOGNIZER_VOSK:
+                // GRTubeYou: offline recognition, same wiring as the other two bars.
+                setSpeechRecognitionCallback(VoskSearchBinder.attach(
+                        requireContext(), getSearchBarInternal(), this::submitQuery));
                 break;
         }
     }
