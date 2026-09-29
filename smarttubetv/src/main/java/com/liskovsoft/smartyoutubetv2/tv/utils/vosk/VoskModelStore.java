@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.smartyoutubetv2.common.prefs.SearchData;
 
 import org.json.JSONObject;
 
@@ -138,6 +139,15 @@ public final class VoskModelStore {
      */
     public static void ensureModel(Context context) {
         if (isModelPresent(context)) {
+            return;
+        }
+
+        // GRTubeYou: 44 MB is a lot to spend on a feature someone may never press,
+        // so the user can switch the automatic fetch off. An explicit retry from
+        // the settings row bypasses this, otherwise switching it back on would not
+        // start anything until the next app launch.
+        if (!SearchData.instance(context).isVoiceModelAutoDownloadEnabled()) {
+            Log.d(TAG, "voice model auto download is off, not fetching");
             return;
         }
 

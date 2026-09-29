@@ -761,4 +761,20 @@
         <item quantity="many">%s секунд</item>
         <item quantity="other">%s секунды</item>
     </plurals>
+    <!-- GRTubeYou: тумблер голосовой модели -->
+    <string name="voice_model_auto_download">Скачивать модель распознавания (44 МБ) в фоне</string>
+    <string name="voice_search_model_disabled">Голосовой поиск выключен: загрузка модели отключена в настройках</string>
+    <!-- GRTubeYou: инструмент VPN / Прокси -->
+    <string name="proxy_host">Сервер</string>
+    <string name="proxy_port">Порт</string>
+    <string name="proxy_login">Логин</string>
+    <string name="proxy_password">Пароль</string>
+    <string name="proxy_not_set">не задан</string>
+    <string name="proxy_bad_port">Порт должен быть числом от 1 до 65535</string>
+    <string name="proxy_unsupported_device">Для прокси нужен Android 4.4 или новее</string>
+    <string name="proxy_test">Проверить подключение</string>
+    <string name="proxy_testing">Проверяем прокси…</string>
+    <string name="proxy_test_ok">Прокси работает</string>
+    <string name="proxy_test_fail">Прокси не ответил</string>
+    <string name="proxy_test_refused">прокси отклонил соединение</string>
 </resources>

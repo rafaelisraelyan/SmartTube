@@ -54,6 +54,16 @@ public class SearchSettingsPresenter extends BasePresenter<Void> {
         }
 
         settingsPresenter.appendRadioCategory(getContext().getString(R.string.speech_engine), options);
+
+        // GRTubeYou: only shown for the offline engine - it is the only one that
+        // needs a 44 MB model, and a row about a download the user cannot trigger
+        // is just noise next to the other engines.
+        if (mSearchData.getSpeechRecognizerType() == SearchData.SPEECH_RECOGNIZER_VOSK) {
+            settingsPresenter.appendSingleSwitch(UiOptionItem.from(
+                    getContext().getString(R.string.voice_model_auto_download),
+                    optionItem -> mSearchData.setVoiceModelAutoDownloadEnabled(optionItem.isSelected()),
+                    mSearchData.isVoiceModelAutoDownloadEnabled()));
+        }
     }
 
     private void appendMiscCategory(AppDialogPresenter settingsPresenter) {

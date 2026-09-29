@@ -10,6 +10,7 @@ import androidx.leanback.widget.SearchBar;
 import androidx.leanback.widget.SpeechRecognitionCallback;
 
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
+import com.liskovsoft.smartyoutubetv2.common.prefs.SearchData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
@@ -104,7 +105,13 @@ public final class VoskSearchBinder {
                         message(app, R.string.voice_search_model_failed);
                         break;
                     default:
-                        message(app, R.string.voice_search_preparing);
+                        // "Preparing" would be a lie when the user switched the
+                        // automatic download off - nothing is coming.
+                        if (SearchData.instance(app).isVoiceModelAutoDownloadEnabled()) {
+                            message(app, R.string.voice_search_preparing);
+                        } else {
+                            message(app, R.string.voice_search_model_disabled);
+                        }
                         break;
                 }
             }

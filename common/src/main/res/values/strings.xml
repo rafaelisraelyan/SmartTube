@@ -778,4 +778,25 @@
     <!-- GRTubeYou: beta update channel -->
     <string name="beta_features" translatable="false">GRTubeYou Beta</string>
     <string name="beta_features_switched" translatable="false">Update channel switched. Check for updates again.</string>
+  <!-- GRTubeYou: voice model toggle -->
+  <string name="voice_model_auto_download">Download the 44 MB speech model in the background</string>
+  <string name="voice_search_model_disabled">Voice search is off: the model download is switched off in Settings</string>
+  <!-- GRTubeYou: the VPN / Proxy tool. proxy_enabled and proxy_type already
+       existed for the old web proxy dialog and are reused, so that screen and
+       this one always say the same thing. -->
+  <string name="settings_vpn" translatable="false">VPN / Proxy</string>
+  <string name="proxy_type_socks5" translatable="false">SOCKS5</string>
+  <string name="proxy_type_http" translatable="false">HTTP</string>
+  <string name="proxy_host">Server</string>
+  <string name="proxy_port">Port</string>
+  <string name="proxy_login">Login</string>
+  <string name="proxy_password">Password</string>
+  <string name="proxy_not_set">not set</string>
+  <string name="proxy_bad_port">Port must be a number from 1 to 65535</string>
+  <string name="proxy_unsupported_device">Proxies need Android 4.4 or newer</string>
+  <string name="proxy_test">Check connection</string>
+  <string name="proxy_testing">Checking the proxy…</string>
+  <string name="proxy_test_ok">Proxy works</string>
+  <string name="proxy_test_fail">Proxy did not answer</string>
+  <string name="proxy_test_refused">the proxy refused the connection</string>
 </resources>

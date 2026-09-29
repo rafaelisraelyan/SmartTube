@@ -31,6 +31,8 @@ public class SearchData {
     private boolean mIsPopularSearchesDisabled;
     private boolean mIsKeyboardFixEnabled;
     private boolean mIsTypingCorrectionDisabled;
+    /** GRTubeYou: fetch the 44 MB offline speech model in the background. */
+    private boolean mIsVoiceModelAutoDownloadEnabled;
 
     private SearchData(Context context) {
         mAppPrefs = AppPrefs.instance(context);
@@ -134,6 +136,21 @@ public class SearchData {
         persistData();
     }
 
+    /**
+     * GRTubeYou: whether the offline speech model may be fetched automatically.
+     *
+     * <p>On by default, as asked for, but it is 44 MB - not everyone wants that
+     * on a metered connection for a feature they never press.
+     */
+    public boolean isVoiceModelAutoDownloadEnabled() {
+        return mIsVoiceModelAutoDownloadEnabled;
+    }
+
+    public void setVoiceModelAutoDownloadEnabled(boolean enabled) {
+        mIsVoiceModelAutoDownloadEnabled = enabled;
+        persistData();
+    }
+
     public boolean isSearchHistoryDisabled() {
         return mIsSearchHistoryDisabled;
     }
@@ -172,6 +189,9 @@ public class SearchData {
         mIsPopularSearchesDisabled = Helpers.parseBoolean(split, 9, false);
         mIsKeyboardFixEnabled = Helpers.parseBoolean(split, 10, false);
         mIsTypingCorrectionDisabled = Helpers.parseBoolean(split, 11, false);
+        // GRTubeYou: default true - the model is what makes offline voice search
+        // possible at all, and it is only fetched when the app starts.
+        mIsVoiceModelAutoDownloadEnabled = Helpers.parseBoolean(split, 12, true);
     }
 
     private void persistData() {
@@ -179,6 +199,7 @@ public class SearchData {
                 Helpers.mergeData(mIsInstantVoiceSearchEnabled, mSearchOptions, mIsFocusOnResultsEnabled,
                         mIsKeyboardAutoShowEnabled, mIsTempBackgroundModeEnabled, null, mSpeechRecognizerType,
                         mIsTrendingSearchesEnabled, mIsSearchHistoryDisabled, mIsPopularSearchesDisabled,
-                        mIsKeyboardFixEnabled, mIsTypingCorrectionDisabled));
+                        mIsKeyboardFixEnabled, mIsTypingCorrectionDisabled,
+                        mIsVoiceModelAutoDownloadEnabled));
     }
 }
