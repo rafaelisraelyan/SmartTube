@@ -15,12 +15,16 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * GRTubeYou: fetches and keeps the offline speech model.
@@ -350,42 +354,103 @@ public final class VoskModelStore {
 
                 publish(app, State.UNPACKING);
 
-                File unpackRoot = new File(app.getFilesDir(), WORK_DIR);
+                File modelDir = new File(new File(app.getFilesDir(), WORK_DIR), dirName);
 
-                // The archive carries its own top level folder, so it is unpacked
-                // into the root and the model ends up at <root>/<dirName>. Unpacking
-                // straight into <root>/<dirName> would bury it one level too deep and
-                // getModelDir() would never find it.
-                deleteTree(unpackRoot);
+                // Vosk's own StorageService.unpack() is deliberately NOT used: it is
+                // built for a model shipped inside the apk's assets (it reads a "uuid"
+                // asset and syncs into getExternalFilesDir), and it constructs the
+                // Model from the path sync() returns, not from the target we pass.
+                // With a model fetched from the network that contract does not hold.
+                // Unpacking here also lets us strip the archive's top level folder,
+                // so the model lands exactly where getModelDir() looks for it.
+                deleteTree(modelDir);
 
-                if (!unpackRoot.mkdirs()) {
-                    Log.w(TAG, "cannot create " + unpackRoot);
+                try {
+                    unzipInto(new File(path), modelDir);
+
+                    if (!new File(modelDir, "am/final.mdl").isFile()) {
+                        throw new IOException("archive has no " + dirName + "/am/final.mdl");
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "unpack failed: " + e);
+                    deleteTree(modelDir);
+                    prefs(app).edit().remove(KEY_DOWNLOAD_ID).apply();
                     publish(app, State.FAILED);
                     return;
                 }
 
-                org.vosk.android.StorageService.unpack(app, path, unpackRoot.getAbsolutePath(),
-                        model0 -> {
-                            prefs(app).edit()
-                                    .putString(KEY_INSTALLED_VERSION, dirName)
-                                    .remove(KEY_DOWNLOAD_ID)
-                                    .apply();
-                            // The archive is 44 MB and the model is already on disk.
-                            new File(path).delete();
-                            Log.d(TAG, "voice model ready: " + new File(unpackRoot, dirName));
-                            publish(app, State.READY);
-                        },
-                        error -> {
-                            Log.w(TAG, "unpack failed: " + error);
-                            deleteTree(unpackRoot);
-                            prefs(app).edit().remove(KEY_DOWNLOAD_ID).apply();
-                            publish(app, State.FAILED);
-                        });
+                prefs(app).edit()
+                        .putString(KEY_INSTALLED_VERSION, dirName)
+                        .remove(KEY_DOWNLOAD_ID)
+                        .apply();
+
+                // The archive is 44 MB and the model is now on disk.
+                new File(path).delete();
+
+                Log.d(TAG, "voice model ready: " + modelDir);
+                publish(app, State.READY);
             } catch (Exception e) {
                 Log.w(TAG, "model install failed: " + e);
                 publish(app, State.FAILED);
             }
         });
+    }
+
+    /**
+     * Extracts the archive, dropping its single top level folder so the files land
+     * directly in {@code target}.
+     */
+    private static void unzipInto(File zipFile, File target) throws IOException {
+        if (!target.isDirectory() && !target.mkdirs()) {
+            throw new IOException("cannot create " + target);
+        }
+
+        try (ZipInputStream zip = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+
+            while ((entry = zip.getNextEntry()) != null) {
+                int slash = entry.getName().indexOf('/');
+
+                if (slash < 0) {
+                    continue; // top level folder entry itself
+                }
+
+                String relative = entry.getName().substring(slash + 1);
+
+                if (relative.isEmpty()) {
+                    continue;
+                }
+
+                // Refuse anything trying to escape the target directory.
+                File outFile = new File(target, relative);
+                String canonicalTarget = target.getCanonicalPath() + File.separator;
+                String canonicalOut = outFile.getCanonicalPath();
+
+                if (!canonicalOut.startsWith(canonicalTarget)) {
+                    throw new IOException("archive entry escapes the target: " + entry.getName());
+                }
+
+                if (entry.isDirectory()) {
+                    outFile.mkdirs();
+                    continue;
+                }
+
+                File parent = outFile.getParentFile();
+
+                if (parent != null) {
+                    parent.mkdirs();
+                }
+
+                try (FileOutputStream out = new FileOutputStream(outFile)) {
+                    byte[] buf = new byte[64 * 1024];
+                    int n;
+
+                    while ((n = zip.read(buf)) > 0) {
+                        out.write(buf, 0, n);
+                    }
+                }
+            }
+        }
     }
 
     private static String sha256(File file) throws Exception {
