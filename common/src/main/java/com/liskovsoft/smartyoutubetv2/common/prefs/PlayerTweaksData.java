@@ -61,6 +61,18 @@ public class PlayerTweaksData implements ProfileChangeListener {
     public static final int PLAYER_BUTTON_DEFAULT = PLAYER_BUTTON_PLAY_PAUSE | PLAYER_BUTTON_PREVIOUS |
             PLAYER_BUTTON_NEXT | PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBSCRIBE |
             PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_PLAYER_SETTINGS;
+
+    /**
+     * GRTubeYou: the set that used to be the default, kept only so the migration
+     * below can recognise it. Do not use it as a default anywhere.
+     */
+    private static final int PLAYER_BUTTON_DEFAULT_LEGACY = PLAYER_BUTTON_SEARCH | PLAYER_BUTTON_PIP |
+            PLAYER_BUTTON_SCREEN_DIMMING | PLAYER_BUTTON_VIDEO_SPEED | PLAYER_BUTTON_VIDEO_STATS |
+            PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBTITLES | PLAYER_BUTTON_SUBSCRIBE |
+            PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_ADD_TO_PLAYLIST |
+            PLAYER_BUTTON_PLAY_PAUSE | PLAYER_BUTTON_REPEAT_MODE | PLAYER_BUTTON_NEXT |
+            PLAYER_BUTTON_PREVIOUS | PLAYER_BUTTON_HIGH_QUALITY | PLAYER_BUTTON_VIDEO_INFO |
+            PLAYER_BUTTON_CHAT;
     public static final int DNS_TYPE_SYSTEM = GlobalPreferences.DNS_TYPE_SYSTEM;
     public static final int DNS_TYPE_IPV4 = GlobalPreferences.DNS_TYPE_IPV4;
     public static final int DNS_TYPE_GOOGLE = GlobalPreferences.DNS_TYPE_GOOGLE;
@@ -813,6 +825,15 @@ public class PlayerTweaksData implements ProfileChangeListener {
         if (mPlayerButtons >>> 30 == 0b1) { // check leftmost bit (old format)
             int bits = 32 - 24;
             mPlayerButtons = mPlayerButtons << bits >>> bits; // remove auto enabled bits
+        }
+
+        // GRTubeYou: mPlayerButtons is persisted, so changing PLAYER_BUTTON_DEFAULT
+        // only affects fresh installs - everyone who already ran the app kept the
+        // old 19-button set and saw no change at all. Anyone whose stored value is
+        // still exactly the old default has clearly not touched this setting, so
+        // move them onto the trimmed one. A custom set is left untouched.
+        if (mPlayerButtons == PLAYER_BUTTON_DEFAULT_LEGACY) {
+            mPlayerButtons = PLAYER_BUTTON_DEFAULT;
         }
     }
 

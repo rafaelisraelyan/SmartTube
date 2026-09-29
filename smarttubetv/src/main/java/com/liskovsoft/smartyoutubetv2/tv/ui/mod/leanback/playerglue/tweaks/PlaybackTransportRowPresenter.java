@@ -782,14 +782,12 @@ public class PlaybackTransportRowPresenter extends PlaybackRowPresenter {
         }
 
         void setQualityInfo(String content) {
-            if (content != null) {
-                if (mPlayerData.isQualityInfoEnabled()) {
-                    mQualityInfo.setText(content);
-                    mQualityInfo.setVisibility(View.VISIBLE);
-                } else {
-                    mQualityInfo.setVisibility(View.GONE);
-                }
-            }
+            // GRTubeYou: always hidden. This readout showed "720/30/AVC" - resolution,
+            // fps and codec in the corner of the player, which is debugging detail on
+            // a TV and just noise for a viewer. The setting that used to drive it is
+            // left in place so the toggle in the settings screen still works for
+            // anyone who wants it back, but it no longer reaches the player.
+            mQualityInfo.setVisibility(View.GONE);
         }
 
         void setDateVisibility(boolean isVisible) {
