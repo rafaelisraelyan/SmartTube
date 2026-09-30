@@ -114,6 +114,15 @@ public final class UpdateProgressBus {
 
         if (action != null) {
             action.run();
+            return;
         }
+
+        // Not a silent no-op. A press that quietly does nothing is worse than a
+        // crash: the user sees a button that works and an app that does not. The
+        // action is missing whenever the download finished without the presenter
+        // having armed it, and that is a bug worth seeing in the log.
+        com.liskovsoft.sharedutils.mylogger.Log.e(
+                UpdateProgressBus.class.getSimpleName(),
+                "install pressed but no action was registered");
     }
 }

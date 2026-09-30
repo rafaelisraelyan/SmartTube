@@ -129,7 +129,15 @@ public class VpnProxySettingsPresenter extends BasePresenter<Void> {
         presenter.appendSingleButton(UiOptionItem.from(
                 getContext().getString(R.string.proxy_test), option -> testConnection()));
 
-        presenter.showDialog(getContext().getString(R.string.settings_vpn), null);
+        // An explicit no-op rather than null. AppDialogPresenter keeps the callback
+        // until the dialog closes and runs every entry, and while it happens to
+        // skip nulls today, handing a method a null asserts "there is nothing
+        // here" - the same kind of assertion that crashed this screen through
+        // ProxyManager.
+        presenter.showDialog(getContext().getString(R.string.settings_vpn), () -> {
+            // Nothing to clean up: every edit is applied the moment it is made, and
+            // the fields are re-read from the manager each time the screen opens.
+        });
     }
 
     private List<OptionItem> buildTypeOptions() {
@@ -243,7 +251,9 @@ public class VpnProxySettingsPresenter extends BasePresenter<Void> {
 
     private void apply() {
         if (mHost.isEmpty() || mPort <= 0) {
-            // Nothing to point at yet. A switch that reads "on" with no server
+            // Passing no proxy is the documented way to keep what is stored and
+            // only change the switch (ProxyManager: "if null, current proxy
+            // setting will be saved"). A switch that reads "on" with no server
             // behind it is the same dead end the old web dialog was, so the stored
             // state is kept but not enabled.
             mProxyManager.saveProxyInfoToPrefs(null, false);
