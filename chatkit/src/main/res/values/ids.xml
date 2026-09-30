@@ -7,24 +7,19 @@
     <item name="messageTime" type="id" />
 
     <!--
-        GRTubeYou: the flat comment row (common/res/layout/item_comment.xml).
-        Declared here rather than in the app module so CommentItemViewHolder can reference
-        them as plain R.id.* the way it does every other id, instead of importing two R
-        classes to reach one of them.
+        GRTubeYou: no comment_* ids are declared here on purpose.
+
+        The flat comment row used to be listed in this file so CommentItemViewHolder could
+        reach them as plain R.id.*. But smarttubetv/res/layout/item_comment.xml declares every
+        one of them with @+id/, which is the normal way and generates the id anyway - so the
+        list here was a second, hand-maintained copy of something already in the layout, free
+        to drift out of sync with it. It did drift: an audit of which declared ids are
+        actually referenced found three that nothing used.
+
+        Only ids that a layout references as @id/ (declared elsewhere) need an entry here,
+        which is the four MESSAGE LIST ITEM ones above - they come from chatkit's own stock
+        layouts and are looked up by the base view holders.
     -->
-    <item name="commentThreadLines" type="id" />
-    <item name="commentContent" type="id" />
-    <item name="commentAuthor" type="id" />
-    <item name="commentTime" type="id" />
-    <item name="commentText" type="id" />
-    <item name="commentActions" type="id" />
-    <item name="commentLikeIcon" type="id" />
-    <item name="commentLikeCount" type="id" />
-    <item name="commentDislikeIcon" type="id" />
-    <item name="commentReplyAction" type="id" />
-    <item name="commentRepliesRow" type="id" />
-    <item name="commentRepliesCount" type="id" />
-    <item name="commentRepliesChevron" type="id" />
     <item name="image" type="id" />
     <item name="imageOverlay" type="id" />
 

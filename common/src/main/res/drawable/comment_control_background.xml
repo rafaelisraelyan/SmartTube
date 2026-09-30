@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    GRTubeYou: focus indicator for the controls inside a comment row.
+
+    The row itself carries comment_row_background, which is a ring around the whole row. But the
+    thumbs and the 'Reply' label are focusable - they have to be, since a long press is not
+    reachable from a remote - so once the D-pad moves down into the action row the row no
+    longer has focus and its ring disappears. Without this, the focus position became invisible
+    the moment it left the comment itself, on an app whose only input is a D-pad.
+
+    A filled rounded shape rather than a ring, because these are small targets: a 1dp outline
+    around a 17dp icon is mostly the icon. The fill is faint enough to read as a highlight
+    rather than as a button being pressed, and the resting state is fully transparent so a row
+    at rest still has no weight at all.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/comment_control_focus" />
+            <corners android:radius="3dp" />
+        </shape>
+    </item>
+
+    <item android:drawable="@android:color/transparent" />
+</selector>

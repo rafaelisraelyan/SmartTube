@@ -42,7 +42,6 @@ public class CommentThreadLinesView extends View {
     private final Path mPath = new Path();
 
     private int mDepth;
-    private float mBaseIndent;
     private float mDepthStep;
     private float mAvatarRoot;
     private float mAvatarShrink;
@@ -64,7 +63,6 @@ public class CommentThreadLinesView extends View {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setColor(ContextCompat.getColor(getContext(), R.color.comment_thread_line));
 
-        mBaseIndent = getResources().getDimension(R.dimen.comment_row_indent);
         mDepthStep = getResources().getDimension(R.dimen.comment_depth_step);
         mAvatarRoot = getResources().getDimension(R.dimen.comment_avatar_size);
         mAvatarShrink = getResources().getDimension(R.dimen.comment_avatar_shrink);
@@ -126,11 +124,16 @@ public class CommentThreadLinesView extends View {
             return;
         }
 
-        // One full-height line per ancestor, so the outermost spine is continuous through the
-        // whole thread and a deeper reply adds its own line inside it.
+        // One line per ancestor, so the outermost spine runs unbroken through the whole thread
+        // and a deeper reply adds its own line inside it.
+        //
+        // Each line starts at the BOTTOM of its own avatar, not at the top of the row. A line
+        // running through the ancestor's avatar would draw a hairline across the face, which is
+        // what the reference avoids: there the spine emerges from underneath.
         for (int level = 0; level < mDepth; level++) {
             float x = lineX(level);
-            canvas.drawLine(x, 0, x, height, mPaint);
+            float top = avatarSizeFor(level);
+            canvas.drawLine(x, top, x, height, mPaint);
         }
 
         // The elbow: down the parent's line, a rounded turn, then across to this avatar.
@@ -142,7 +145,7 @@ public class CommentThreadLinesView extends View {
         if (radius <= 0) {
             // No room to turn - draw a plain corner rather than an arc that doubles back.
             mPath.reset();
-            mPath.moveTo(parentX, 0);
+            mPath.moveTo(parentX, avatarSizeFor(mDepth - 1));
             mPath.lineTo(parentX, height);
             mPath.moveTo(parentX, elbowY);
             mPath.lineTo(ownIndent, elbowY);
@@ -151,7 +154,7 @@ public class CommentThreadLinesView extends View {
         }
 
         mPath.reset();
-        mPath.moveTo(parentX, 0);
+        mPath.moveTo(parentX, avatarSizeFor(mDepth - 1));
         mPath.lineTo(parentX, elbowY - radius);
         mPath.quadTo(parentX, elbowY, parentX + radius, elbowY);
         mPath.lineTo(ownIndent, elbowY);
@@ -160,13 +163,17 @@ public class CommentThreadLinesView extends View {
     }
 
     /**
-     * The x of a level's vertical line: the centre of the avatar at that level.
+     * The x of a level's vertical line: the centre of the avatar at that level, so the line
+     * passes through the avatar rather than beside it.
      *
-     * <p>The view is laid out across the row's full width starting at the row's left padding,
-     * so the row's own base indent has to be added here - the avatar sits at
-     * {@code comment_row_indent + indent(level)} from the row's left edge.
+     * <p>Deliberately does NOT add {@code comment_row_indent}. This view sits inside the
+     * row, which already has that as its start padding, so the view's own x=0 is already at
+     * the row's indent. Adding it here again put every line 16dp too far right, which in
+     * turn put each elbow's start to the right of its own end - the connectors bent
+     * backwards into the previous level, and level 1's line landed just past the right edge
+     * of the avatar instead of through it.
      */
     private float lineX(int level) {
-        return mBaseIndent + indentFor(level) + avatarSizeFor(level) / 2f;
+        return indentFor(level) + avatarSizeFor(level) / 2f;
     }
 }

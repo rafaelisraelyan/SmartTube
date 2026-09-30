@@ -52,6 +52,13 @@
     <color name="comment_thread_line">#26FFFFFF</color>
     <!-- Focus ring around the selected row, replacing the pressed card. -->
     <color name="comment_focus">#4DFFFFFF</color>
+    <!--
+        Focus fill for the controls inside a row. Faint, because these are 17dp targets: a
+        hairline around a thumb is mostly thumb. The row's own ring disappears as soon as the
+        D-pad moves into the action row, so without this the focus position goes invisible on
+        a device whose only input is a D-pad.
+    -->
+    <color name="comment_control_focus">#26FFFFFF</color>
     <color name="semi_grey">#64282828</color>
     <color name="grey">#282828</color>
     <color name="dimming">#D0000000</color>
