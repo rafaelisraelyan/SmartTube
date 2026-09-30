@@ -12,6 +12,16 @@ android {
     compileSdkVersion project.properties.compileSdkVersion
     buildToolsVersion project.properties.buildToolsVersion
     testOptions.unitTests.includeAndroidResources = true
+    // GRTubeYou: make android.util.Log a no-op on the JVM instead of a thrower.
+    //
+    // Without this, any unit test that reaches a logging call dies with
+    // "Method e in android.util.Log not mocked". That makes every code path that reports
+    // something untestable, which is precisely the code that most needs testing: a press
+    // that could not do its job, a download with no key, a vote with nowhere to go. The
+    // alternative is Robolectric, which cannot run here - it downloads its android-all jar
+    // at run time and it is in no local cache, so the project's one pre-existing
+    // Robolectric test already fails 10/10 on this machine.
+    testOptions.unitTests.returnDefaultValues = true
 
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion

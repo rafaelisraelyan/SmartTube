@@ -52,8 +52,22 @@ public final class UpdateProgressBus {
     private UpdateProgressBus() {
     }
 
-    /** Called by the row when it is created. */
+    /**
+     * Called by the row when it is created.
+     *
+     * <p>Re-binding the same row is a no-op. A preference row is bound again on every
+     * RecyclerView pass, so a naive implementation re-sent {@code onUpdateReady} each time.
+     * That is harmless in itself - the row just re-reads the same text - but it means the
+     * "finished" signal is delivered an unbounded number of times, and anything added to that
+     * callback later (a sound, a focus request, a log line) inherits the repetition without
+     * anyone deciding it should. Identity is checked here so the replay is exactly once per
+     * distinct row, which is what the contract says it means.
+     */
     public static void setTarget(Target target) {
+        if (sTarget == target) {
+            return;
+        }
+
         sTarget = target;
 
         if (sReady && sInstallText != null) {
