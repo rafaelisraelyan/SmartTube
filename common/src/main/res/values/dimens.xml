@@ -10,7 +10,7 @@
     <dimen name="player_top_bar_text_size2">14sp</dimen>
     <dimen name="player_time_bar_height">4dp</dimen>
     <dimen name="player_time_bar_text_size">14sp</dimen>
-    <dimen name="player_time_bar_scrubber_size">12dp</dimen>
+    <dimen name="player_time_bar_scrubber_size">12sp</dimen>
     <dimen name="player_time_bar_scrubber_dragged_size">16dp</dimen>
     <dimen name="progress_bar_size">70dp</dimen>
     <dimen name="debug_text_size">12sp</dimen>
@@ -18,4 +18,48 @@
     <dimen name="subtitle_text_size">30sp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!--
+        GRTubeYou: metrics for the flat comment row.
+
+        Sized off the reference rather than picked by eye. The row used to be a 40dp avatar
+        beside a card padded 10/10 inside a list that already carried 16dp of left margin
+        and 3dp of right, so one comment took far more height than its text needed. What
+        follows trims that: a smaller avatar, no card, generous vertical air between rows
+        instead, and a single-line action row.
+
+        Horizontal insets are left alone - 16dp is the dialog's own padding, inherited from
+        the list, and narrowing it would push the avatar into the window edge.
+    -->
+    <!-- Avatar, top level comment. Smaller than the old 40dp: with no card around it the
+         avatar reads as a marker rather than as the head of a block. -->
+    <dimen name="comment_avatar_size">34dp</dimen>
+
+    <!-- Gap between the avatar and the text column. -->
+    <dimen name="comment_gutter">10dp</dimen>
+
+    <!-- Vertical air between comments. This is what separates the rows now that the card
+         is gone, so it is deliberately more generous than the old 10dp bottom margin. -->
+    <dimen name="comment_row_margin_top">14dp</dimen>
+    <dimen name="comment_row_margin_bottom">2dp</dimen>
+
+    <!-- Author line to body. -->
+    <dimen name="comment_author_margin_bottom">3dp</dimen>
+
+    <!-- Action row: thumbs, count, 'Reply'. -->
+    <dimen name="comment_action_margin_top">5dp</dimen>
+    <dimen name="comment_icon_size">17dp</dimen>
+    <dimen name="comment_icon_gap">5dp</dimen>
+    <!-- Gap between the vote group and the 'Reply' label. -->
+    <dimen name="comment_action_gap">14dp</dimen>
+
+    <!-- The 'N replies' row and its chevron. -->
+    <dimen name="comment_replies_margin_top">5dp</dimen>
+    <dimen name="comment_replies_gap">6dp</dimen>
+    <dimen name="comment_chevron_size">14dp</dimen>
+
+    <!-- The thread line, inset from the row edge so it passes under the avatar's optical
+         centre the way it does in the reference. -->
+    <dimen name="comment_thread_indent">16dp</dimen>
+    <dimen name="comment_thread_width">1dp</dimen>
 </resources>

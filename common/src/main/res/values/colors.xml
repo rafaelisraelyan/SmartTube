@@ -23,6 +23,35 @@
     <color name="comments_bg">#303030</color>
     <!-- Focused comment color. Default: #17C2DCF2 -->
     <color name="comments_bg_pressed">#27C2DCF2</color>
+
+    <!--
+        GRTubeYou: flat comment list.
+
+        The comments used to sit on comments_bg (#303030) rounded cards, which made the
+        list read as a chat log. They now sit straight on the dialog background, so these
+        are all it takes: body text at full white, metadata stepped down, and the thread
+        line barely there. No accent colour is introduced - the only colour on a resting
+        row is a grey, and the active vote is the single exception.
+
+        comments_bg and comments_bg_pressed stay: the live chat overlay and the old
+        chatkit layouts still reference them.
+    -->
+    <!-- Comment body: full white, the loudest thing in the row after the name. -->
+    <color name="comment_text">#FFFFFFFF</color>
+    <!-- Author name: white, read as a heading above the body. -->
+    <color name="comment_author">#FFFFFFFF</color>
+    <!-- Timestamp and vote count: present but clearly quieter than the body. -->
+    <color name="comment_meta">#B3FFFFFF</color>
+    <!-- 'Reply' label and the reply count: tappable, so brighter than plain metadata. -->
+    <color name="comment_action">#E6FFFFFF</color>
+    <!-- Inactive thumb icons. -->
+    <color name="comment_icon">#99FFFFFF</color>
+    <!-- Active vote: the one accent on the row. -->
+    <color name="comment_icon_active">#FFFFFFFF</color>
+    <!-- The thin vertical thread line. Deliberately very low contrast. -->
+    <color name="comment_thread_line">#26FFFFFF</color>
+    <!-- Focus ring around the selected row, replacing the pressed card. -->
+    <color name="comment_focus">#4DFFFFFF</color>
     <color name="semi_grey">#64282828</color>
     <color name="grey">#282828</color>
     <color name="dimming">#D0000000</color>
@@ -33,4 +62,18 @@
     <color name="magenta">#FF00FF</color>
     <color name="brown">#964B00</color>
     <color name="light_pink">#FF1684</color>
+
+    <!--
+        GRTubeYou: labels for the flat comment row.
+
+        Not translatable on purpose. Every other string in the comment row is localised by
+        YouTube when the comments are fetched - the timestamp and the reply count both arrive
+        already in the viewer's language. These three are the app's own, and they were
+        English in the build that shipped the redesign, so rather than pretend to translate
+        them they are marked as such and left in one language. A translatable="false" string
+        is also exempt from the translation lint that a real translation would have to answer.
+    -->
+    <string name="comment_action_reply" translatable="false">Reply</string>
+    <string name="comment_action_like" translatable="false">Like</string>
+    <string name="comment_action_dislike" translatable="false">Dislike</string>
 </resources>

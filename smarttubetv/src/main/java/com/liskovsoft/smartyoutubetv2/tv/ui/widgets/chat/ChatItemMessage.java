@@ -6,10 +6,7 @@ import android.text.TextUtils;
 import com.liskovsoft.mediaserviceinterfaces.data.ChatItem;
 import com.liskovsoft.mediaserviceinterfaces.data.CommentItem;
 import com.liskovsoft.sharedutils.helpers.Helpers;
-import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
-import com.liskovsoft.smartyoutubetv2.tv.R;
-import com.liskovsoft.googlecommon.common.helpers.ServiceHelper;
 import com.stfalcon.chatkit.commons.models.IMessage;
 
 import java.util.ArrayList;
@@ -25,7 +22,20 @@ public class ChatItemMessage implements IMessage {
     private ChatItemAuthor mAuthor;
     private Date mCreatedAt;
     private CommentItem mCommentItem;
+    private String mAuthorName;
+    private String mPublishedDate;
+    private String mLikeCount;
+    private String mReplyCount;
+    private boolean mLiked;
+    private boolean mDisliked;
 
+    /**
+     * GRTubeYou: live chat keeps the inline author prefix.
+     *
+     * <p>Only the comments list was restructured. A chat line is a single utterance by one
+     * author - "@nick: text" reads correctly in one flow - and there is no vote or reply
+     * structure to lay out, so the header stays part of the text here. Untouched on purpose.
+     */
     public static ChatItemMessage from(ChatItem chatItem) {
         ChatItemMessage message = new ChatItemMessage();
         message.mId = chatItem.getId();
@@ -34,23 +44,38 @@ public class ChatItemMessage implements IMessage {
         }
         message.mAuthor = ChatItemAuthor.from(chatItem);
         message.mCreatedAt = new Date();
+        message.mAuthorName = chatItem.getAuthorName();
 
         return message;
     }
 
+    /**
+     * GRTubeYou: the row is no longer one string.
+     *
+     * <p>It used to be a single bold header line - "@name · 812 · 4 дня назад · 6 ответов" -
+     * followed by the body, both rendered by one TextView inside a grey card. That is the
+     * messenger look the flat list replaces, and a single span cannot express the new
+     * structure anyway: the author is a separate weight from the timestamp, the vote count
+     * belongs in the action row rather than next to the name, and the reply count is its own
+     * tappable row with a chevron.
+     *
+     * <p>So each part is kept in its own field and the layout binds them to their own views.
+     * {@link #getText()} still returns just the body, which is what the text view shows and
+     * what {@code IMessage.checkMessage} requires.
+     *
+     * <p>The unused {@code context} parameter is kept on purpose: it is public API called from
+     * the fragment and from {@link #fromSplit}.
+     */
     public static ChatItemMessage from(Context context, CommentItem commentItem) {
         ChatItemMessage message = new ChatItemMessage();
         message.mId = commentItem.getId();
-        if (commentItem.getMessage() != null && !commentItem.getMessage().trim().isEmpty()) {
-            CharSequence header = ServiceHelper.combineItems(
-                    " " + Video.TERTIARY_TEXT_DELIM + " ",
-                    commentItem.getAuthorName(),
-                    commentItem.getLikeCount() != null ? String.format("%s %s", commentItem.getLikeCount(), Helpers.THUMB_UP) : null,
-                    commentItem.getPublishedDate(),
-                    commentItem.getReplyCount(),
-                    commentItem.isLiked() ? String.format("(%s)", context.getString(R.string.you_liked)) : null);
-            message.mText = TextUtils.concat(Utils.bold(header), "\n", Utils.createSmallNewLine(), commentItem.getMessage());
-        }
+        message.mText = commentItem.getMessage();
+        message.mAuthorName = commentItem.getAuthorName();
+        message.mPublishedDate = commentItem.getPublishedDate();
+        message.mLikeCount = commentItem.getLikeCount();
+        message.mReplyCount = commentItem.getReplyCount();
+        message.mLiked = commentItem.isLiked();
+        message.mDisliked = commentItem.isDisliked();
         message.mAuthor = ChatItemAuthor.from(commentItem);
         message.mCreatedAt = new Date();
         message.mCommentItem = commentItem;
@@ -93,6 +118,13 @@ public class ChatItemMessage implements IMessage {
 
                     public boolean isLiked() {
                         return commentItem.isLiked();
+                    }
+
+                    // GRTubeYou: the vote state is shown per row now, so a split piece of a
+                    // downvoted comment has to carry the flag too. Left out, it fell through
+                    // to the interface default and the thumbs read as un-pressed.
+                    public boolean isDisliked() {
+                        return commentItem.isDisliked();
                     }
 
                     public String getLikeCount() {
@@ -183,5 +215,45 @@ public class ChatItemMessage implements IMessage {
 
     public CommentItem getCommentItem() {
         return mCommentItem;
+    }
+
+    /** @return author name, or null when the payload had none. */
+    public String getAuthorName() {
+        return mAuthorName;
+    }
+
+    /** @return relative publish time such as "4 дня назад", already localised by YouTube. */
+    public String getPublishedDate() {
+        return mPublishedDate;
+    }
+
+    /** @return upvote count, or null when the comment has no votes yet. */
+    public String getLikeCount() {
+        return mLikeCount;
+    }
+
+    /**
+     * @return the reply count phrase, already localised by YouTube ("6 ответов"), or null
+     * when the comment has no replies. Shown as-is rather than rebuilt from a number, so
+     * the app does not have to guess at a plural form.
+     */
+    public String getReplyCount() {
+        return mReplyCount;
+    }
+
+    public boolean isLiked() {
+        return mLiked;
+    }
+
+    public boolean isDisliked() {
+        return mDisliked;
+    }
+
+    /**
+     * @return true when this row can open a thread. A comment with no replies has no
+     * continuation key, and asking for one would open an empty dialog.
+     */
+    public boolean hasThread() {
+        return mReplyCount != null && !mReplyCount.trim().isEmpty() && mCommentItem != null && !mCommentItem.isEmpty();
     }
 }

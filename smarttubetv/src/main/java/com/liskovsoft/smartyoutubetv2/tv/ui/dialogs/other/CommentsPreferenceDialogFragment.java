@@ -19,8 +19,10 @@ import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.preference.LeanbackPreferenceDialogFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.widgets.chat.ChatItemMessage;
+import com.liskovsoft.smartyoutubetv2.tv.ui.widgets.chat.CommentItemViewHolder;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 import com.stfalcon.chatkit.commons.models.IMessage;
+import com.stfalcon.chatkit.messages.MessageHolders;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
@@ -86,14 +88,32 @@ public class CommentsPreferenceDialogFragment extends LeanbackPreferenceDialogFr
         }
 
         MessagesList messagesList = (MessagesList) view.findViewById(R.id.messagesList);
-        MessagesListAdapter<ChatItemMessage> adapter = new MessagesListAdapter<>(SENDER_ID, (imageView, url, payload) ->
+        MessagesListAdapter<ChatItemMessage> adapter = new MessagesListAdapter<>(SENDER_ID, new CommentMessageHolders(), (imageView, url, payload) ->
                 Glide.with(view.getContext())
                     .load(url)
                     .apply(ViewUtil.glideOptions())
                     .circleCrop() // resize image
                     .into(imageView));
         adapter.setLoadMoreListener((page, totalItemsCount) -> mCommentsReceiver.onLoadMore(mCurrentGroup));
-        adapter.setOnMessageViewClickListener((v, message) -> mCommentsReceiver.onCommentClicked(message.getCommentItem()));
+
+        // One handler for every way of opening a thread: the comment body, the 'Reply' label
+        // and the 'N replies' row. They are registered as the same listener instance on three
+        // ids, so they cannot drift apart - there is no second path to keep in sync, which
+        // is the whole point of routing them through chatkit's per-view click list rather than
+        // writing a bespoke click handler in the holder.
+        MessagesListAdapter.OnMessageViewClickListener<ChatItemMessage> openThread =
+                (v, message) -> mCommentsReceiver.onCommentClicked(message.getCommentItem());
+        adapter.setOnMessageViewClickListener(openThread);
+        adapter.registerViewClickListener(R.id.commentReplyAction, openThread);
+        adapter.registerViewClickListener(R.id.commentRepliesRow, openThread);
+
+        // The thumbs. A long press is not reachable from a TV remote, so the action row calls
+        // the same receiver method directly rather than relying on the long press.
+        adapter.registerViewClickListener(R.id.commentLikeIcon,
+                (v, message) -> mCommentsReceiver.onCommentVoteClicked(message.getCommentItem(), true));
+        adapter.registerViewClickListener(R.id.commentDislikeIcon,
+                (v, message) -> mCommentsReceiver.onCommentVoteClicked(message.getCommentItem(), false));
+
         adapter.setOnMessageViewLongClickListener((v, message) -> mCommentsReceiver.onCommentLongClicked(message.getCommentItem()));
         adapter.setOnMessageViewFocusListener((view1, message) -> mFocusedMessage = message);
         messagesList.setAdapter(adapter);
@@ -194,6 +214,20 @@ public class CommentsPreferenceDialogFragment extends LeanbackPreferenceDialogFr
 
     public void enableTransparent(boolean enable) {
         mIsTransparent = enable;
+    }
+
+    /**
+     * GRTubeYou: points chatkit at the flat comment row.
+     *
+     * <p>chatkit builds its holders in a constructor and exposes no setter, so the only way
+     * to swap the incoming layout is to pass a pre-configured instance to the adapter. The
+     * outgoing layout is left alone: no comment is ever authored by the signed-in user, so
+     * that branch of chatkit is never reached and changing it would be untestable guesswork.
+     */
+    private static class CommentMessageHolders extends MessageHolders {
+        CommentMessageHolders() {
+            setIncomingTextConfig(CommentItemViewHolder.class, R.layout.item_comment);
+        }
     }
 
     @Override

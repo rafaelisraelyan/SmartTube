@@ -50,6 +50,19 @@
     <!--    android:paddingEnd="56dp"-->
     <!--    android:visibility="gone" />-->
 
+    <!--
+        GRTubeYou: the bubble attributes are gone.
+
+        incomingDefaultBubbleColor and the two pressed/selected variants existed only to paint
+        the grey rounded card behind each comment. With the card removed they would configure
+        a background nothing draws, and incomingBubblePadding* would inset a bubble that is no
+        longer there - the row brings its own metrics from the comment_* dimens.
+
+        incomingAvatarWidth/Height stay, because BaseIncomingMessageViewHolder still applies
+        them to the avatar and would otherwise fall back to the 40dp default. showIncomingTime
+        stays false: the row shows the timestamp itself, on the author line, so chatkit's own
+        time view must not also appear.
+    -->
     <com.stfalcon.chatkit.messages.MessagesList
         android:id="@+id/messagesList"
         android:layout_width="match_parent"
@@ -57,16 +70,9 @@
         app:textAutoLink="web"
         app:showIncomingTime="false"
         app:isMessageFocusable="true"
-        app:incomingBubblePaddingLeft="10sp"
-        app:incomingBubblePaddingRight="10sp"
-        app:incomingBubblePaddingTop="0sp"
-        app:incomingBubblePaddingBottom="0sp"
-        app:incomingAvatarWidth="30dp"
-        app:incomingAvatarHeight="30dp"
-        app:incomingDefaultBubbleColor="@color/comments_bg"
-        app:incomingDefaultBubbleSelectedColor="@color/comments_bg_pressed"
-        app:incomingDefaultBubblePressedColor="@color/comments_bg_pressed"
-        app:incomingTextColor="@color/white"
+        app:incomingAvatarWidth="@dimen/comment_avatar_size"
+        app:incomingAvatarHeight="@dimen/comment_avatar_size"
+        app:incomingTextColor="@color/comment_text"
         />
 
 </LinearLayout>

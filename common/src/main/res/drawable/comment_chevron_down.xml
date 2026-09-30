@@ -1,0 +1,22 @@
+<!--
+    GRTubeYou: the chevron on the 'N replies' row.
+
+    Sits beside the count and points down, matching the reference. Two lines rather than a
+    filled triangle: at 14dp a solid chevron reads as a blob, and a stroked one stays
+    legible against the dark background at any density.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/comment_chevron_size"
+    android:height="@dimen/comment_chevron_size"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/comment_action">
+
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M6,9l6,6 6,-6"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -5,6 +5,26 @@
     <item name="messageText" type="id" />
     <item name="messageUserAvatar" type="id" />
     <item name="messageTime" type="id" />
+
+    <!--
+        GRTubeYou: the flat comment row (common/res/layout/item_comment.xml).
+        Declared here rather than in the app module so CommentItemViewHolder can reference
+        them as plain R.id.* the way it does every other id, instead of importing two R
+        classes to reach one of them.
+    -->
+    <item name="commentThreadLine" type="id" />
+    <item name="commentContent" type="id" />
+    <item name="commentAuthor" type="id" />
+    <item name="commentTime" type="id" />
+    <item name="commentText" type="id" />
+    <item name="commentActions" type="id" />
+    <item name="commentLikeIcon" type="id" />
+    <item name="commentLikeCount" type="id" />
+    <item name="commentDislikeIcon" type="id" />
+    <item name="commentReplyAction" type="id" />
+    <item name="commentRepliesRow" type="id" />
+    <item name="commentRepliesCount" type="id" />
+    <item name="commentRepliesChevron" type="id" />
     <item name="image" type="id" />
     <item name="imageOverlay" type="id" />
 

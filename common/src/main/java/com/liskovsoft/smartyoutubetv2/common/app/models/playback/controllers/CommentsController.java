@@ -102,7 +102,14 @@ public class CommentsController extends BasePlayerController {
 
                     @Override
                     public void onCommentLongClicked(CommentItem commentItem) {
-                        toggleLike(this, commentItem);
+                        toggleVote(this, commentItem, true);
+                    }
+
+                    // GRTubeYou: the nested list renders the same flat row, so it needs the
+                    // same action row. Without this the thumbs would be dead one level down.
+                    @Override
+                    public void onCommentVoteClicked(CommentItem commentItem, boolean like) {
+                        toggleVote(this, commentItem, like);
                     }
                 };
 
@@ -111,7 +118,12 @@ public class CommentsController extends BasePlayerController {
 
             @Override
             public void onCommentLongClicked(CommentItem commentItem) {
-                toggleLike(this, commentItem);
+                toggleVote(this, commentItem, true);
+            }
+
+            @Override
+            public void onCommentVoteClicked(CommentItem commentItem, boolean like) {
+                toggleVote(this, commentItem, like);
             }
 
             @Override
@@ -175,14 +187,29 @@ public class CommentsController extends BasePlayerController {
         appDialogPresenter.showDialog();
     }
 
-    private void toggleLike(CommentsReceiver receiver, CommentItem commentItem) {
+    /**
+     * GRTubeYou: one path for both thumbs.
+     *
+     * <p>The row is updated locally first and the request follows, so the icon reacts on
+     * the press instead of after a round trip. The service is asked to toggle whichever
+     * thumb was pressed, and it reads the current state itself to decide set vs clear -
+     * see {@code CommentsServiceInt.toggleDislike}.
+     */
+    private void toggleVote(CommentsReceiver receiver, CommentItem commentItem, boolean like) {
         MyCommentItem myCommentItem = MyCommentItem.from(commentItem);
-        myCommentItem.setLiked(!myCommentItem.isLiked());
+        myCommentItem.setLiked(like);
 
         receiver.sync(myCommentItem);
 
+        String key = commentItem.getNestedCommentsKey();
+
+        if (key == null) {
+            return;
+        }
+
         RxHelper.execute(
-                getCommentsService().toggleLikeObserve(commentItem.getNestedCommentsKey()), e -> MessageHelpers.showMessage(getContext(), e.getMessage()));
+                like ? getCommentsService().toggleLikeObserve(key) : getCommentsService().toggleDislikeObserve(key),
+                e -> MessageHelpers.showMessage(getContext(), e.getMessage()));
     }
 
     private static final class MyCommentItem implements CommentItem {
@@ -193,13 +220,14 @@ public class CommentsController extends BasePlayerController {
         private final String mPublishedDate;
         private final String mNestedCommentsKey;
         private boolean mIsLiked;
+        private boolean mIsDisliked;
         private String mLikeCount;
         private final String mReplyCount;
         private final boolean mIsEmpty;
 
         private MyCommentItem(
                 String id, String message, String authorName, String authorPhoto, String publishedDate,
-                String nestedCommentsKey, boolean isLiked, String likeCount, String replyCount, boolean isEmpty) {
+                String nestedCommentsKey, boolean isLiked, boolean isDisliked, String likeCount, String replyCount, boolean isEmpty) {
             mId = id;
             mMessage = message;
             mAuthorName = authorName;
@@ -207,6 +235,7 @@ public class CommentsController extends BasePlayerController {
             mPublishedDate = publishedDate;
             mNestedCommentsKey = nestedCommentsKey;
             mIsLiked = isLiked;
+            mIsDisliked = isDisliked;
             mLikeCount = likeCount;
             mReplyCount = replyCount;
             mIsEmpty = isEmpty;
@@ -247,20 +276,46 @@ public class CommentsController extends BasePlayerController {
             return mIsLiked;
         }
 
+        @Override
+        public boolean isDisliked() {
+            return mIsDisliked;
+        }
+
+        /**
+         * GRTubeYou: applies the press locally.
+         *
+         * <p>Pressing the same thumb twice clears the vote - that is what "toggle" means on
+         * YouTube, and it is why the service is asked to toggle rather than to set. The
+         * opposite thumb is cleared at the same time because YouTube keeps a single vote:
+         * the two buttons are alternatives, not two independent switches.
+         */
         public void setLiked(boolean isLiked) {
-            if (mIsLiked == isLiked) {
+            if (isLiked) {
+                boolean changed = !mIsLiked;
+                mIsLiked = true;
+                mIsDisliked = false;
+                if (changed) {
+                    adjustLikeCount(true);
+                }
                 return;
             }
 
-            mIsLiked = isLiked;
+            boolean changed = mIsLiked;
+            mIsLiked = false;
+            mIsDisliked = true;
+            if (changed) {
+                adjustLikeCount(false);
+            }
+        }
 
+        private void adjustLikeCount(boolean increment) {
             if (mLikeCount == null) {
                 mLikeCount = String.valueOf(0);
             }
 
-            if (Helpers.isInteger(getLikeCount())) {
-                int likeCount = Helpers.parseInt(getLikeCount());
-                int count = isLiked ? ++likeCount : --likeCount;
+            if (Helpers.isInteger(mLikeCount)) {
+                int likeCount = Helpers.parseInt(mLikeCount);
+                int count = increment ? ++likeCount : --likeCount;
                 mLikeCount = count > 0 ? String.valueOf(count) : null;
             }
         }
@@ -283,7 +338,8 @@ public class CommentsController extends BasePlayerController {
         public static MyCommentItem from(CommentItem commentItem) {
             return new MyCommentItem(commentItem.getId(), commentItem.getMessage(), commentItem.getAuthorName(),
                     commentItem.getAuthorPhoto(), commentItem.getPublishedDate(), commentItem.getNestedCommentsKey(),
-                    commentItem.isLiked(), commentItem.getLikeCount(), commentItem.getReplyCount(), commentItem.isEmpty());
+                    commentItem.isLiked(), commentItem.isDisliked(), commentItem.getLikeCount(), commentItem.getReplyCount(),
+                    commentItem.isEmpty());
         }
     }
 }

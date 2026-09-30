@@ -55,6 +55,11 @@ public abstract class AbstractCommentsReceiver implements CommentsReceiver {
     }
 
     @Override
+    public void onCommentVoteClicked(CommentItem commentItem, boolean like) {
+
+    }
+
+    @Override
     public void onFinish(Backup backup) {
         setCallback(null); // Mem leak fix (holds AppDialogActivity)
     }

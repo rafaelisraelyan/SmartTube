@@ -1,0 +1,210 @@
+<!--
+    GRTubeYou: the flat comment row.
+
+    Replaces item_incoming_text_message.xml, which was a card: a 40dp avatar beside a
+    FlexboxLayout filled with comments_bg and rounded 15dp on every corner, with the author,
+    vote count, timestamp and reply count mashed into one bold line inside it. That shape is
+    a chat bubble, and it is what the reference is not.
+
+    What is here instead is a vertical list item with a clear reading order:
+
+        [avatar]  @author  4 дня назад        <- author and time share the line
+                 текст комментария          <- body, white, on the dialog background
+                 (thumb) 816  (thumb)  Ответить   <- compact action row
+          |      6 ответов  v              <- reply row, with the thread line beside it
+
+    Two things are worth noting about how it is built:
+
+    - The thread line is a sibling of the content, not a border. It runs from below the
+      avatar down past the reply row, inset by comment_thread_indent so it passes under the
+      avatar's optical centre. Anchored to the row top with layout_below on nothing - it
+      simply spans the row - which is why it is a 1dp view rather than a background on the
+      content block.
+
+    - There is no background on the row. A resting comment sits directly on the dialog
+      background; focus is added by the holder as a hairline outline, not a fill. That is
+      the whole point of the change, so no card drawable is referenced here at all.
+
+    The ids that chatkit's BaseIncomingMessageViewHolder looks for (messageUserAvatar,
+    messageTime) are kept, because the holder uses them for avatar loading and sizing. The
+    timestamp is bound to a separate id of our own so it can sit on the author line in a
+    muted colour rather than in chatkit's single centred slot.
+-->
+<com.stfalcon.chatkit.commons.widgets.FocusFixRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/comment_row_margin_top"
+    android:layout_marginBottom="@dimen/comment_row_margin_bottom"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:focusable="true"
+    android:focusableInTouchMode="false">
+
+    <!--
+        Thread line. Spans the row so it reads as continuing past the reply row, exactly
+        as in the reference. Hidden when the comment has no replies - set by the holder,
+        because a line beside a comment with nothing below it would be a lie.
+    -->
+    <View
+        android:id="@+id/commentThreadLine"
+        android:layout_width="@dimen/comment_thread_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="@dimen/comment_thread_indent"
+        android:background="@drawable/comment_thread_line"
+        android:visibility="gone" />
+
+    <com.stfalcon.chatkit.utils.ShapeImageView
+        android:id="@id/messageUserAvatar"
+        android:layout_width="@dimen/comment_avatar_size"
+        android:layout_height="@dimen/comment_avatar_size"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="@dimen/comment_gutter"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:id="@+id/commentContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/messageUserAvatar"
+        android:layout_toRightOf="@id/messageUserAvatar"
+        android:orientation="vertical">
+
+        <!-- Author line: name and time side by side, as in the reference. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/comment_author_margin_bottom"
+            android:baselineAligned="true"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/commentAuthor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif"
+                android:maxLines="1"
+                android:textColor="@color/comment_author"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/commentTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/comment_meta"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!--
+            Body. lineSpacingMultiplier is 1.0 here, not the 0.9 the card used: at this size
+            0.9 pulled consecutive lines tight enough to hurt a long comment. The old
+            maxLines="50" is kept - it is a real guard against the RecyclerView bug that
+            produced the comment, not a design choice.
+        -->
+        <TextView
+            android:id="@+id/commentText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:lineSpacingMultiplier="1.0"
+            android:maxLines="50"
+            android:textColor="@color/comment_text"
+            android:textSize="15sp" />
+
+        <!--
+            Action row. Wrapped in a horizontal LinearLayout so a short comment and a long
+            one both keep the row on a single line. The thumbs are real buttons: on a TV
+            there is no long press, so an explicit control is the only way to vote.
+        -->
+        <LinearLayout
+            android:id="@+id/commentActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/comment_action_margin_top"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/commentLikeIcon"
+                android:layout_width="@dimen/comment_icon_size"
+                android:layout_height="@dimen/comment_icon_size"
+                android:background="@null"
+                android:contentDescription="@string/comment_action_like"
+                android:focusable="true"
+                android:src="@drawable/comment_thumb_up" />
+
+            <TextView
+                android:id="@+id/commentLikeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/comment_icon_gap"
+                android:textColor="@color/comment_meta"
+                android:textSize="13sp" />
+
+            <ImageView
+                android:id="@+id/commentDislikeIcon"
+                android:layout_width="@dimen/comment_icon_size"
+                android:layout_height="@dimen/comment_icon_size"
+                android:layout_marginStart="12dp"
+                android:background="@null"
+                android:contentDescription="@string/comment_action_dislike"
+                android:focusable="true"
+                android:src="@drawable/comment_thumb_down" />
+
+            <TextView
+                android:id="@+id/commentReplyAction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/comment_action_gap"
+                android:focusable="true"
+                android:text="@string/comment_action_reply"
+                android:textColor="@color/comment_action"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!--
+            Reply row. Focusable and clickable, and it is the same handler the comment body
+            uses - the holder passes the identical listener to both, so there is one code
+            path for opening a thread.
+        -->
+        <LinearLayout
+            android:id="@+id/commentRepliesRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/comment_replies_margin_top"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/commentRepliesCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/comment_action"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/commentRepliesChevron"
+                android:layout_width="@dimen/comment_chevron_size"
+                android:layout_height="@dimen/comment_chevron_size"
+                android:layout_marginStart="@dimen/comment_replies_gap"
+                android:background="@null"
+                android:contentDescription="@null"
+                android:src="@drawable/comment_chevron_down" />
+        </LinearLayout>
+    </LinearLayout>
+</com.stfalcon.chatkit.commons.widgets.FocusFixRelativeLayout>

@@ -772,27 +772,34 @@ public class MessagesListAdapter<MESSAGE extends IMessage>
             // Change background of the focused message
             // NOTE: you can have only one focus listener
             View bubble = v.findViewById(R.id.bubble);
-            //bubble.setBackgroundResource(hasFocus ? R.drawable.shape_incoming_message_focused : R.drawable.shape_incoming_message);
 
-            // Save the current padding (API 19 fix)
-            int paddingLeft = bubble.getPaddingLeft();
-            int paddingTop = bubble.getPaddingTop();
-            int paddingRight = bubble.getPaddingRight();
-            int paddingBottom = bubble.getPaddingBottom();
+            // GRTubeYou: guard. The bubble styling below dereferences this view without a null
+            // check, which was safe only because every stock layout has @id/bubble. The flat
+            // comment row (smarttubetv/res/layout/item_comment.xml) has no bubble - it is a
+            // flat row, not a card - so findViewById returns null and this threw on the first
+            // focus change. It draws the focus ring itself in CommentItemViewHolder, so there
+            // is nothing to do when the bubble is absent.
+            if (bubble != null) {
+                // Save the current padding (API 19 fix)
+                int paddingLeft = bubble.getPaddingLeft();
+                int paddingTop = bubble.getPaddingTop();
+                int paddingRight = bubble.getPaddingRight();
+                int paddingBottom = bubble.getPaddingBottom();
 
-            if (hasFocus) {
-                // Invert text and bg color
-                Drawable originalBackground = messagesListStyle.getIncomingBubbleDrawable();
-                Drawable shapeBackground = messagesListStyle.getIncomingBubbleSelectedDrawable();
-                bubble.setBackground(new LayerDrawable(new Drawable[]{originalBackground, shapeBackground}));
-            } else {
-                // Revert to original
-                Drawable originalBackground = messagesListStyle.getIncomingBubbleDrawable();
-                bubble.setBackground(originalBackground);
+                if (hasFocus) {
+                    // Invert text and bg color
+                    Drawable originalBackground = messagesListStyle.getIncomingBubbleDrawable();
+                    Drawable shapeBackground = messagesListStyle.getIncomingBubbleSelectedDrawable();
+                    bubble.setBackground(new LayerDrawable(new Drawable[]{originalBackground, shapeBackground}));
+                } else {
+                    // Revert to original
+                    Drawable originalBackground = messagesListStyle.getIncomingBubbleDrawable();
+                    bubble.setBackground(originalBackground);
+                }
+
+                // Restore the padding (API 19 fix)
+                bubble.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
             }
-
-            // Restore the padding (API 19 fix)
-            bubble.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 
             if (hasFocus) {
                 notifyMessageViewFocused(v, wrapper.item);
