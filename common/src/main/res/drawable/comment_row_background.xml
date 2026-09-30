@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    GRTubeYou: the row's background, which is only ever a focus indicator.
+
+    The earlier version of this drawable was a plain stroked shape applied to every row, which
+    put a rectangle around every single comment - the exact card look the redesign was meant
+    to remove, just with thin lines instead of rounded ones. A state list fixes it properly:
+    the ring exists only while the row has focus, and a resting row has no background at all,
+    so the list lies flat on the dialog background.
+
+    Focus still needs an indicator on a TV, or the D-pad position is invisible. A hairline
+    outline rather than a fill, for the same reason - a fill puts the weight back.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Focused: a hairline ring, no fill. -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/comment_focus" />
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+
+    <!-- Everything else: nothing at all. -->
+    <item android:drawable="@android:color/transparent" />
+</selector>

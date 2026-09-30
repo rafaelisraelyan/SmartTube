@@ -228,10 +228,15 @@ public class CommentsController extends BasePlayerController {
         private String mLikeCount;
         private final String mReplyCount;
         private final boolean mIsEmpty;
+        // GRTubeYou: the nesting level has to survive a vote. This copy is what the row is
+        // re-bound with after a thumbs press, so a level left out here would snap a nested
+        // reply back to the top of the thread the moment anyone voted on it.
+        private final int mReplyLevel;
 
         private MyCommentItem(
                 String id, String message, String authorName, String authorPhoto, String publishedDate,
-                String nestedCommentsKey, boolean isLiked, boolean isDisliked, String likeCount, String replyCount, boolean isEmpty) {
+                String nestedCommentsKey, boolean isLiked, boolean isDisliked, String likeCount, String replyCount,
+                boolean isEmpty, int replyLevel) {
             mId = id;
             mMessage = message;
             mAuthorName = authorName;
@@ -243,6 +248,7 @@ public class CommentsController extends BasePlayerController {
             mLikeCount = likeCount;
             mReplyCount = replyCount;
             mIsEmpty = isEmpty;
+            mReplyLevel = replyLevel;
         }
 
         @Override
@@ -283,6 +289,11 @@ public class CommentsController extends BasePlayerController {
         @Override
         public boolean isDisliked() {
             return mIsDisliked;
+        }
+
+        @Override
+        public int getReplyLevel() {
+            return mReplyLevel;
         }
 
         /**
@@ -349,7 +360,7 @@ public class CommentsController extends BasePlayerController {
             return new MyCommentItem(commentItem.getId(), commentItem.getMessage(), commentItem.getAuthorName(),
                     commentItem.getAuthorPhoto(), commentItem.getPublishedDate(), commentItem.getNestedCommentsKey(),
                     commentItem.isLiked(), commentItem.isDisliked(), commentItem.getLikeCount(), commentItem.getReplyCount(),
-                    commentItem.isEmpty());
+                    commentItem.isEmpty(), commentItem.getReplyLevel());
         }
     }
 }

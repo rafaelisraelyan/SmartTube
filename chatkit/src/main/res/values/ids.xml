@@ -12,7 +12,7 @@
         them as plain R.id.* the way it does every other id, instead of importing two R
         classes to reach one of them.
     -->
-    <item name="commentThreadLine" type="id" />
+    <item name="commentThreadLines" type="id" />
     <item name="commentContent" type="id" />
     <item name="commentAuthor" type="id" />
     <item name="commentTime" type="id" />

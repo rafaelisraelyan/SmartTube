@@ -28,6 +28,7 @@ public class ChatItemMessage implements IMessage {
     private String mReplyCount;
     private boolean mLiked;
     private boolean mDisliked;
+    private int mReplyLevel;
 
     /**
      * GRTubeYou: live chat keeps the inline author prefix.
@@ -76,6 +77,7 @@ public class ChatItemMessage implements IMessage {
         message.mReplyCount = commentItem.getReplyCount();
         message.mLiked = commentItem.isLiked();
         message.mDisliked = commentItem.isDisliked();
+        message.mReplyLevel = commentItem.getReplyLevel();
         message.mAuthor = ChatItemAuthor.from(commentItem);
         message.mCreatedAt = new Date();
         message.mCommentItem = commentItem;
@@ -125,6 +127,12 @@ public class ChatItemMessage implements IMessage {
                     // to the interface default and the thumbs read as un-pressed.
                     public boolean isDisliked() {
                         return commentItem.isDisliked();
+                    }
+
+                    // GRTubeYou: and so must the depth, or a split piece of a nested reply
+                    // would snap back to the top level in the middle of a thread.
+                    public int getReplyLevel() {
+                        return commentItem.getReplyLevel();
                     }
 
                     public String getLikeCount() {
@@ -247,6 +255,18 @@ public class ChatItemMessage implements IMessage {
 
     public boolean isDisliked() {
         return mDisliked;
+    }
+
+    /**
+     * GRTubeYou: how deep this comment sits in its thread. 0 is a top-level comment.
+     *
+     * <p>YouTube has always sent this and the app was discarding it, which is why every reply
+     * in a branch used to render as a direct child of the root. The row now indents and draws
+     * its connectors from this number, so a reply to a reply lands one step further right
+     * than its parent instead of back beside it.
+     */
+    public int getReplyLevel() {
+        return mReplyLevel;
     }
 
     /**

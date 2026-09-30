@@ -31,9 +31,28 @@
         Horizontal insets are left alone - 16dp is the dialog's own padding, inherited from
         the list, and narrowing it would push the avatar into the window edge.
     -->
+    <!-- The row's own left inset. Everything else measures from here. -->
+    <dimen name="comment_row_indent">16dp</dimen>
+
     <!-- Avatar, top level comment. Smaller than the old 40dp: with no card around it the
          avatar reads as a marker rather than as the head of a block. -->
     <dimen name="comment_avatar_size">34dp</dimen>
+
+    <!--
+        Nesting. Each level is indented by comment_depth_step and its avatar is comment_avatar_shrink
+        smaller, down to comment_avatar_min. Measured off the reference, where the root avatar
+        is about 1.3x a level-1 avatar and the indent between them is a little over one root
+        avatar wide.
+
+        The shrink has a floor on purpose: past a point a shrinking avatar stops reading as
+        an avatar and starts reading as a smudge, and YouTube itself nests three deep at most.
+    -->
+    <dimen name="comment_depth_step">22dp</dimen>
+    <dimen name="comment_avatar_shrink">5dp</dimen>
+    <dimen name="comment_avatar_min">24dp</dimen>
+
+    <!-- Radius of the turn where a thread line meets the elbow going to the avatar. -->
+    <dimen name="comment_thread_elbow">10dp</dimen>
 
     <!-- Gap between the avatar and the text column. -->
     <dimen name="comment_gutter">10dp</dimen>
@@ -42,6 +61,21 @@
          is gone, so it is deliberately more generous than the old 10dp bottom margin. -->
     <dimen name="comment_row_margin_top">14dp</dimen>
     <dimen name="comment_row_margin_bottom">2dp</dimen>
+
+    <!--
+        A root comment in an open thread gets more air under it than a reply does, so the
+        branch it heads is a visual block rather than one more row. The reference leaves a
+        clear gap between the root's action row and the first reply.
+    -->
+    <dimen name="comment_root_margin_bottom">18dp</dimen>
+
+    <!--
+        Author name size. A root comment gets the larger one: inside an open thread it is the
+        heading of the branch, and a size difference is the cheapest way to say that without
+        putting a box around it. In the flat list every row is a root, so they all match.
+    -->
+    <dimen name="comment_author_size_root">15sp</dimen>
+    <dimen name="comment_author_size_reply">14sp</dimen>
 
     <!-- Author line to body. -->
     <dimen name="comment_author_margin_bottom">3dp</dimen>
@@ -58,8 +92,9 @@
     <dimen name="comment_replies_gap">6dp</dimen>
     <dimen name="comment_chevron_size">14dp</dimen>
 
-    <!-- The thread line, inset from the row edge so it passes under the avatar's optical
-         centre the way it does in the reference. -->
-    <dimen name="comment_thread_indent">16dp</dimen>
+    <!--
+        The thread line: 1dp, and deliberately almost invisible (comment_thread_line is
+        #26FFFFFF). It is there to show that a reply hangs off something, not to draw a box.
+    -->
     <dimen name="comment_thread_width">1dp</dimen>
 </resources>

@@ -43,13 +43,16 @@ public class CommentVoteStateTest {
     private static Object newItem(String likeCount, boolean liked, boolean disliked) throws Exception {
         Class<?> cls = itemClass();
 
+        // The trailing int is the reply level. Every comment in this suite is top level,
+        // which is the right starting point for a test about votes - the depth is exercised
+        // by CommentThreadDepthTest.
         Constructor<?> ctor = cls.getDeclaredConstructor(
                 String.class, String.class, String.class, String.class, String.class, String.class,
-                boolean.class, boolean.class, String.class, String.class, boolean.class);
+                boolean.class, boolean.class, String.class, String.class, boolean.class, int.class);
         ctor.setAccessible(true);
 
         return ctor.newInstance("id", "message", "author", "photo", "2 days ago", "nestedKey",
-                liked, disliked, likeCount, "6 replies", false);
+                liked, disliked, likeCount, "6 replies", false, 0);
     }
 
     /**

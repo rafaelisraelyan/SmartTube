@@ -1,61 +1,62 @@
 <!--
-    GRTubeYou: the flat comment row.
+    GRTubeYou: the flat comment row, with real thread nesting.
 
-    Replaces item_incoming_text_message.xml, which was a card: a 40dp avatar beside a
-    FlexboxLayout filled with comments_bg and rounded 15dp on every corner, with the author,
-    vote count, timestamp and reply count mashed into one bold line inside it. That shape is
-    a chat bubble, and it is what the reference is not.
+    What it replaced: a 40dp avatar beside a FlexboxLayout filled with comments_bg (#303030)
+    and rounded 15dp on every corner, with author, vote count, timestamp and reply count
+    mashed into one bold line inside it. That reads as a chat bubble.
 
-    What is here instead is a vertical list item with a clear reading order:
+    What it is now - one flat list on the dialog background, with the nesting carried by
+    indentation and hairline connectors rather than by boxes:
 
-        [avatar]  @author  4 дня назад        <- author and time share the line
-                 текст комментария          <- body, white, on the dialog background
-                 (thumb) 816  (thumb)  Ответить   <- compact action row
-          |      6 ответов  v              <- reply row, with the thread line beside it
+        |  @andre...  1 день назад            <- depth 0, the anchor, no line of its own
+        |  ТОЛЬКО ОНИ ПОНЯЛИ STEAM FRAME!
+        |  (thumb) 758  (thumb)  Ответить
+        |_
+        |   |  @exe_xddd123  1 день назад     <- depth 1: spine + elbow from the root's line
+        |   |  Не понял только Игорь Линк
+        |   |_
+        |   |   |  @andre...  19 часов назад  <- depth 2: its own line inside the root's
+        |   |   |  @exe_xddd123 только после Шевцова)
 
-    Two things are worth noting about how it is built:
+    Three things are deliberate here:
 
-    - The thread line is a sibling of the content, not a border. It runs from below the
-      avatar down past the reply row, inset by comment_thread_indent so it passes under the
-      avatar's optical centre. Anchored to the row top with layout_below on nothing - it
-      simply spans the row - which is why it is a 1dp view rather than a background on the
-      content block.
+    - There is no card, no background and no border on a resting row. comment_row_background
+      is a state list whose only non-transparent state is state_focused, so a ring appears
+      under the D-pad and nowhere else. The earlier version applied a stroked shape to every
+      row, which boxed every comment.
 
-    - There is no background on the row. A resting comment sits directly on the dialog
-      background; focus is added by the holder as a hairline outline, not a fill. That is
-      the whole point of the change, so no card drawable is referenced here at all.
+    - The connectors are one view (CommentThreadLinesView) that paints a line per ancestor
+      level, not a nest of positioned children. A row at level 4 needs four lines; four
+      nested views per row is four times the view count for every comment in the list.
 
-    The ids that chatkit's BaseIncomingMessageViewHolder looks for (messageUserAvatar,
-    messageTime) are kept, because the holder uses them for avatar loading and sizing. The
-    timestamp is bound to a separate id of our own so it can sit on the author line in a
-    muted colour rather than in chatkit's single centred slot.
+    - The avatar's left offset and size are set in code from the row's depth, so the geometry
+      the lines are drawn with and the geometry the avatar is laid out with come from the same
+      source. If they were two sets of numbers the elbow would stop in mid-air.
+
+    chatkit's BaseIncomingMessageViewHolder needs @id/messageUserAvatar and tolerates a
+    missing @id/messageTime, which is deliberate: the timestamp is bound to commentTime so it
+    can share the author line in a muted colour.
 -->
 <com.stfalcon.chatkit.commons.widgets.FocusFixRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/comment_row_margin_top"
     android:layout_marginBottom="@dimen/comment_row_margin_bottom"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
+    android:background="@drawable/comment_row_background"
     android:focusable="true"
-    android:focusableInTouchMode="false">
+    android:focusableInTouchMode="false"
+    android:paddingStart="@dimen/comment_row_indent"
+    android:paddingEnd="@dimen/comment_row_indent">
 
     <!--
-        Thread line. Spans the row so it reads as continuing past the reply row, exactly
-        as in the reference. Hidden when the comment has no replies - set by the holder,
-        because a line beside a comment with nothing below it would be a lie.
+        Connectors. Spans the row, so the outermost line runs unbroken down the thread.
+        Draws nothing at depth 0 - the anchor has no line above it. Set by the holder.
     -->
-    <View
-        android:id="@+id/commentThreadLine"
-        android:layout_width="@dimen/comment_thread_width"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="@dimen/comment_thread_indent"
-        android:background="@drawable/comment_thread_line"
-        android:visibility="gone" />
+    <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.chat.CommentThreadLinesView
+        android:id="@+id/commentThreadLines"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <com.stfalcon.chatkit.utils.ShapeImageView
         android:id="@id/messageUserAvatar"
@@ -107,10 +108,9 @@
         </LinearLayout>
 
         <!--
-            Body. lineSpacingMultiplier is 1.0 here, not the 0.9 the card used: at this size
-            0.9 pulled consecutive lines tight enough to hurt a long comment. The old
-            maxLines="50" is kept - it is a real guard against the RecyclerView bug that
-            produced the comment, not a design choice.
+            Body. lineSpacingMultiplier is 1.0, not the 0.9 the card used: at this size 0.9
+            pulled consecutive lines tight enough to hurt a long comment. The old
+            maxLines="50" is kept - it guards a real RecyclerView bug, not a style choice.
         -->
         <TextView
             android:id="@+id/commentText"
@@ -123,9 +123,8 @@
             android:textSize="15sp" />
 
         <!--
-            Action row. Wrapped in a horizontal LinearLayout so a short comment and a long
-            one both keep the row on a single line. The thumbs are real buttons: on a TV
-            there is no long press, so an explicit control is the only way to vote.
+            Action row. The thumbs are real buttons: on a TV there is no long press, so an
+            explicit control is the only way to vote.
         -->
         <LinearLayout
             android:id="@+id/commentActions"
@@ -175,9 +174,8 @@
         </LinearLayout>
 
         <!--
-            Reply row. Focusable and clickable, and it is the same handler the comment body
-            uses - the holder passes the identical listener to both, so there is one code
-            path for opening a thread.
+            Reply row. Focusable and clickable, and wired to the same handler instance the
+            comment body uses, so there is one path for opening a thread.
         -->
         <LinearLayout
             android:id="@+id/commentRepliesRow"

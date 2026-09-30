@@ -1,8 +1,13 @@
 <!--
     GRTubeYou: thumbs down, active state (the comment is downvoted).
 
-    Like and dislike are one vote, so this is filled only when the comment is downvoted and
-    the up thumb is hollow at the same time - never both.
+    The same dedicated down-thumb silhouette as comment_thumb_down, filled and one step
+    brighter - the single accent on a comment row. Like and dislike are one vote, so this is
+    filled only when the comment is downvoted and the up thumb is hollow at the same time,
+    never both.
+
+    Identical path data to the resting icon apart from the fill, which is what makes the pair
+    read as two states of one icon rather than two different drawings.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="@dimen/comment_icon_size"
