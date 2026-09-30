@@ -52,6 +52,9 @@ android {
     compileSdkVersion project.properties.compileSdkVersion
     buildToolsVersion project.properties.buildToolsVersion
     testOptions.unitTests.includeAndroidResources = true
+    // GRTubeYou: same reason as in common/build.gradle - android.util.Log throws on the JVM
+    // without this, which makes every code path that reports a problem untestable.
+    testOptions.unitTests.returnDefaultValues = true
     ndkVersion "21.0.6113669" // reduce size of the *.so files (stripping debug symbols)
 
     // GRTubeYou: Jetpack Compose for TV
