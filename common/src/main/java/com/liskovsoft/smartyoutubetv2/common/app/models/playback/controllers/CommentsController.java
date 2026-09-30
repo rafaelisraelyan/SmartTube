@@ -197,13 +197,17 @@ public class CommentsController extends BasePlayerController {
      */
     private void toggleVote(CommentsReceiver receiver, CommentItem commentItem, boolean like) {
         MyCommentItem myCommentItem = MyCommentItem.from(commentItem);
-        myCommentItem.setLiked(like);
+        myCommentItem.toggleVote(like);
 
         receiver.sync(myCommentItem);
 
         String key = commentItem.getNestedCommentsKey();
 
         if (key == null) {
+            // The row has already been updated, but there is no key to send the vote on, so
+            // nothing reaches YouTube. Say so rather than let the icon sit lit over a comment
+            // that was never actually voted on.
+            Log.e(TAG, "cannot vote: comment has no nested comments key");
             return;
         }
 
@@ -284,26 +288,32 @@ public class CommentsController extends BasePlayerController {
         /**
          * GRTubeYou: applies the press locally.
          *
-         * <p>Pressing the same thumb twice clears the vote - that is what "toggle" means on
-         * YouTube, and it is why the service is asked to toggle rather than to set. The
-         * opposite thumb is cleared at the same time because YouTube keeps a single vote:
-         * the two buttons are alternatives, not two independent switches.
+         * <p>The parameter is the thumb that was <b>pressed</b>, not the state to be in, so
+         * this has to toggle that thumb. Passing the desired state instead was a real bug:
+         * pressing an already-lit thumbs-up left the local vote on while the service - which
+         * genuinely toggles - cleared it server-side. The row and YouTube then disagreed until
+         * the list was rebuilt, which is the exact failure this whole path is meant to avoid.
+         *
+         * <p>The other thumb always clears, because YouTube keeps a single vote: the two
+         * buttons are alternatives, not two independent switches.
          */
-        public void setLiked(boolean isLiked) {
-            if (isLiked) {
-                boolean changed = !mIsLiked;
-                mIsLiked = true;
+        public void toggleVote(boolean likePressed) {
+            if (likePressed) {
+                boolean wasLiked = mIsLiked;
+                mIsLiked = !mIsLiked;
                 mIsDisliked = false;
-                if (changed) {
-                    adjustLikeCount(true);
+                if (mIsLiked != wasLiked) {
+                    adjustLikeCount(mIsLiked);
                 }
                 return;
             }
 
-            boolean changed = mIsLiked;
+            boolean wasLiked = mIsLiked;
             mIsLiked = false;
-            mIsDisliked = true;
-            if (changed) {
+            mIsDisliked = !mIsDisliked;
+            if (wasLiked) {
+                // Downvoting a comment you had liked gives the like back, so the count
+                // drops. Downvoting without a prior like leaves the count alone.
                 adjustLikeCount(false);
             }
         }
