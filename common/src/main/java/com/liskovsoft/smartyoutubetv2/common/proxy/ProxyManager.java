@@ -108,13 +108,37 @@ public class ProxyManager {
         return mProxy;
     }
 
+    /**
+     * GRTubeYou: the address of the configured proxy, or null when there is none.
+     *
+     * <p>These getters used to test only {@code mProxy == null}, which is the wrong
+     * test. When no proxy is configured the field holds {@link Proxy#NO_PROXY}, which
+     * is not null but whose {@code address()} is - so the cast produced null and the
+     * call on it threw. Opening the settings screen with no proxy configured crashed
+     * the app on that null. The old web dialog never hit it because it read the raw
+     * uri instead of these getters.
+     */
+    private PasswdInetSocketAddress getConfiguredAddress() {
+        if (mProxy == null || mProxy.type() == Proxy.Type.DIRECT) {
+            return null;
+        }
+
+        java.net.SocketAddress address = mProxy.address();
+
+        return address instanceof PasswdInetSocketAddress ? (PasswdInetSocketAddress) address : null;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public String getProxyHost() {
-        return mProxy == null ? "" : ((PasswdInetSocketAddress) mProxy.address()).getHostString();
+        PasswdInetSocketAddress address = getConfiguredAddress();
+
+        return address == null ? "" : nullSafe(address.getHostString());
     }
 
     public int getProxyPort() {
-        return mProxy == null ? 0 : ((PasswdInetSocketAddress) mProxy.address()).getPort();
+        PasswdInetSocketAddress address = getConfiguredAddress();
+
+        return address == null ? 0 : address.getPort();
     }
 
     public Proxy.Type getProxyType() {
@@ -122,11 +146,19 @@ public class ProxyManager {
     }
 
     public String getProxyUsername() {
-        return mProxy == null ? "" : ((PasswdInetSocketAddress) mProxy.address()).getUsername();
+        PasswdInetSocketAddress address = getConfiguredAddress();
+
+        return address == null ? "" : nullSafe(address.getUsername());
     }
 
     public String getProxyPassword() {
-        return mProxy == null ? "" : ((PasswdInetSocketAddress) mProxy.address()).getPassword();
+        PasswdInetSocketAddress address = getConfiguredAddress();
+
+        return address == null ? "" : nullSafe(address.getPassword());
+    }
+
+    private static String nullSafe(String value) {
+        return value == null ? "" : value;
     }
 
     protected void loadProxyInfoFromPrefs() {

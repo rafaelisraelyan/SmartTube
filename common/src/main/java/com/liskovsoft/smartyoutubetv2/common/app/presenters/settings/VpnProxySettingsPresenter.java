@@ -60,12 +60,34 @@ public class VpnProxySettingsPresenter extends BasePresenter<Void> {
         super(context);
         mProxyManager = new ProxyManager(context);
 
-        mHost = nullSafe(mProxyManager.getProxyHost());
-        mPort = mProxyManager.getProxyPort();
-        mLogin = nullSafe(mProxyManager.getProxyUsername());
-        mPassword = nullSafe(mProxyManager.getProxyPassword());
-        mType = mProxyManager.getProxyType() == Proxy.Type.HTTP ? Proxy.Type.HTTP : Proxy.Type.SOCKS;
+        // GRTubeYou: read the address directly instead of through ProxyManager's
+        // getters. With nothing configured the manager holds Proxy.NO_PROXY - not
+        // null, but with a null address - and the getters used to dereference that
+        // straight away, so opening this screen crashed before it drew anything.
+        // They are fixed too, but the screen must not depend on that.
+        PasswdInetSocketAddress address = configuredAddress(mProxyManager);
+
+        if (address != null) {
+            mHost = nullSafe(address.getHostString());
+            mPort = address.getPort();
+            mLogin = nullSafe(address.getUsername());
+            mPassword = nullSafe(address.getPassword());
+            mType = mProxyManager.getProxyType() == Proxy.Type.HTTP ? Proxy.Type.HTTP : Proxy.Type.SOCKS;
+        }
+
         mEnabled = mProxyManager.isProxyEnabled();
+    }
+
+    private static PasswdInetSocketAddress configuredAddress(ProxyManager manager) {
+        Proxy proxy = manager.getCurrentProxy();
+
+        if (proxy == null || proxy.type() == Proxy.Type.DIRECT) {
+            return null;
+        }
+
+        java.net.SocketAddress address = proxy.address();
+
+        return address instanceof PasswdInetSocketAddress ? (PasswdInetSocketAddress) address : null;
     }
 
     public static VpnProxySettingsPresenter instance(Context context) {
