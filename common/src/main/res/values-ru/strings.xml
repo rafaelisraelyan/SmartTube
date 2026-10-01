@@ -778,4 +778,14 @@
     <string name="proxy_test_ok">Прокси работает</string>
     <string name="proxy_test_fail">Прокси не ответил</string>
     <string name="proxy_test_refused">прокси отклонил соединение</string>
+
+    <!-- GRTubeYou: сообщение об ошибке -->
+    <string name="settings_bug_report" translatable="false">Сообщить об ошибке</string>
+    <string name="bug_report">Сообщить об ошибке</string>
+    <string name="bug_report_hint">Опишите, что сломалось. Лог и сведения о приставке прикрепляются сами.</string>
+    <string name="bug_report_sending">Собираем лог и отправляем…</string>
+    <string name="bug_report_sent">Спасибо, отчёт отправлен</string>
+    <string name="bug_report_sent_truncated">Спасибо, отчёт отправлен. Лог был слишком длинным, поэтому он сокращён</string>
+    <string name="bug_report_failed">Не удалось отправить отчёт: %1$s</string>
+    <string name="bug_report_no_receiver">Приёмник отчётов в этой сборке ещё не настроен</string>
 </resources>

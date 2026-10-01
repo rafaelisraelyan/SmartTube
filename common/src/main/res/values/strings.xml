@@ -800,4 +800,17 @@
   <string name="proxy_test_ok">Proxy works</string>
   <string name="proxy_test_fail">Proxy did not answer</string>
   <string name="proxy_test_refused">the proxy refused the connection</string>
+
+  <!--
+    GRTubeYou: the bug report. Every message here says what actually happened, including the
+    failures. A report the user believes was filed and that was not is worse than an error,
+    because they will not file a second one. -->
+  <string name="settings_bug_report" translatable="false">Report a problem</string>
+  <string name="bug_report">Report a problem</string>
+  <string name="bug_report_hint">Describe what went wrong. The log and your device details go with it automatically.</string>
+  <string name="bug_report_sending">Collecting the log and sending…</string>
+  <string name="bug_report_sent">Thank you, the report is sent</string>
+  <string name="bug_report_sent_truncated">Thank you, the report is sent. The log was too long, so it was shortened</string>
+  <string name="bug_report_failed">Could not send the report: %1$s</string>
+  <string name="bug_report_no_receiver">Bug reports are not set up in this build yet</string>
 </resources>

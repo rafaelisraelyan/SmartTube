@@ -9,6 +9,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.AboutSimple
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.AccountSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.AutoFrameRateSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.BackupSettingsPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.BugReportPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.SponsorBlockSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.DeArrowSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.GeneralSettingsPresenter;
@@ -72,6 +73,10 @@ public class AppDataSourceManager {
         // network block reads in one place at the end of the grid.
         settingItems.add(new SettingsItem(
                 context.getString(R.string.settings_vpn), () -> VpnProxySettingsPresenter.instance(context).show(), R.drawable.settings_vpn));
+        // GRTubeYou: bug report. Last before About, so both "something is wrong here" tools
+        // sit together at the end of the grid.
+        settingItems.add(new SettingsItem(
+                context.getString(R.string.settings_bug_report), () -> BugReportPresenter.instance(context).show(), R.drawable.settings_bug));
 
         if (Helpers.equalsAny(context.getPackageName(), Utils.KNOWN_PACKAGES)) {
             settingItems.add(new SettingsItem(
