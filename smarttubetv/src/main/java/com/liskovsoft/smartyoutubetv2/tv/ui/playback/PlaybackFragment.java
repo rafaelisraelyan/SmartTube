@@ -861,18 +861,20 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
             result = TextUtils.concat( result, " ", Video.TERTIARY_TEXT_DELIM, " ", Utils.color(getContext().getString(R.string.badge_live), ContextCompat.getColor(getContext(), R.color.red)));
         }
 
-        if (getContext() != null && video.likeCount != null) {
-            result = TextUtils.concat(result, " ", Video.TERTIARY_TEXT_DELIM, " ", video.likeCount, Helpers.NON_BREAKING_SPACE, Helpers.THUMB_UP); // color of thumb cannot be changed
-        }
-
-        if (getContext() != null && video.dislikeCount != null) {
-            result = TextUtils.concat(result, " ", Video.TERTIARY_TEXT_DELIM, " ", video.dislikeCount, Helpers.NON_BREAKING_SPACE, Helpers.THUMB_DOWN); // color of thumb cannot be changed
-        }
-
-        if (getContext() != null && video.subscriberCount != null) {
-            result = TextUtils.concat(result, " ", Video.TERTIARY_TEXT_DELIM, " ", video.subscriberCount.replace(" ", Helpers.NON_BREAKING_SPACE));
-        }
-
+        // GRTubeYou: this line used to append the subscriber count too, giving
+        // "channel - views - date - subscribers - likes - dislikes". It is now
+        // "channel - views - date": the counts are what belong next to the buttons that change
+        // them, and the subscriber count belongs to the channel rather than to this video.
+        //
+        // Nothing is lost. The channel avatar in the control row opens the channel, and
+        // ChannelFragment shows the subscriber count there - which is a better home for it than
+        // a line that is about this video. The field itself is untouched and still arrives
+        // with the metadata, so anything that wants it can keep reading it.
+        //
+        // The likes and dislikes moved the same way, to sit beside the like and dislike
+        // buttons. SuggestionsController still fills all three fields in on the same path as
+        // before, and the likes counter setting still clears the two vote counts - so a viewer
+        // who turns that setting off now gets bare icons instead of a bare line.
         return result;
     }
 

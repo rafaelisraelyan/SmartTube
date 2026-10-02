@@ -14,10 +14,12 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tooltips;
 
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.leanback.R;
@@ -25,6 +27,8 @@ import androidx.leanback.widget.Action;
 import androidx.leanback.widget.PlaybackControlsRow;
 import androidx.leanback.widget.Presenter;
 import androidx.leanback.widget.PresenterSelector;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.CountBadgeAction;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.IconBadgeDrawable;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.PaddingAction;
 
 /**
@@ -74,12 +78,26 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
         ImageView mIcon;
         TextView mLabel;
         View mFocusableView;
+        /**
+         * GRTubeYou: the icon box geometry from the inflated layout, remembered so it can be
+         * put back. Width zero means "use whatever the layout says".
+         */
+        int mDefaultIconWidth;
+        int mDefaultIconGravity;
+        int mDefaultIconMarginStart;
 
         public ActionViewHolder(View view) {
             super(view);
             mIcon = (ImageView) view.findViewById(R.id.icon);
             mLabel = (TextView) view.findViewById(R.id.label);
             mFocusableView = view.findViewById(R.id.button);
+
+            ViewGroup.LayoutParams lp = mIcon.getLayoutParams();
+            mDefaultIconWidth = lp.width;
+            if (lp instanceof FrameLayout.LayoutParams) {
+                mDefaultIconGravity = ((FrameLayout.LayoutParams) lp).gravity;
+                mDefaultIconMarginStart = ((FrameLayout.LayoutParams) lp).leftMargin;
+            }
         }
     }
 
@@ -105,7 +123,40 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
             Action action = (Action) item;
             ActionViewHolder vh = (ActionViewHolder) viewHolder;
 
-            vh.mIcon.setImageDrawable(action.getIcon());
+            // GRTubeYou: the like and dislike buttons carry their count beside the icon.
+            //
+            // The icon box is a fixed 32dp, so a wider image is scaled down to fit and the
+            // thumb would shrink to make room. The box is therefore widened for these two
+            // actions only, and put back for every other one - which matters because the
+            // holders are recycled: a holder that once showed a count is reused for the gear
+            // button a moment later, and without the reset every control after it would stay
+            // wider than it should be.
+            CharSequence badge = badgeOf(action);
+
+            if (badge != null && action.getIcon() != null) {
+                // The circle behind the button is a fixed 48dp and the icon 32dp, so the icon
+                // carries 8dp of slack on each side inside it. The number goes into that slack
+                // and then past the circle, which keeps the thumb exactly where it was instead
+                // of letting the wider image shift it off the centre.
+                int circle = vh.mFocusableView.getResources()
+                        .getDimensionPixelSize(R.dimen.lb_control_button_secondary_diameter);
+                int inset = Math.max(0, (circle - action.getIcon().getIntrinsicWidth()) / 2);
+
+                IconBadgeDrawable composed = new IconBadgeDrawable(action.getIcon(), badge, inset);
+                int width = composed.getIntrinsicWidth();
+
+                vh.mIcon.setImageDrawable(composed);
+
+                // Left-aligned with a margin of half the overflow: the frame grows to the right,
+                // the circle stays centred in it, and the thumb - which now begins after the
+                // inset - lands back on the circle's centre.
+                int overflow = Math.max(0, width - circle);
+                setIconGeometry(vh, width, Gravity.TOP | Gravity.START, overflow / 2);
+            } else {
+                vh.mIcon.setImageDrawable(action.getIcon());
+                setIconGeometry(vh, 0, vh.mDefaultIconGravity, 0);
+            }
+
             if (action instanceof PaddingAction) {
                 int padding = ((PaddingAction) action).getPadding();
                 if (padding > 0) {
@@ -146,12 +197,73 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
         @Override
         public void setOnClickListener(ViewHolder viewHolder,
                                        View.OnClickListener listener) {
-            ((ActionViewHolder) viewHolder).mFocusableView.setOnClickListener(listener);
+            ActionViewHolder vh = (ActionViewHolder) viewHolder;
+            vh.mFocusableView.setOnClickListener(listener);
+
+            // GRTubeYou: the icon sits on top of the clickable circle, so a press on the thumb
+            // - or on the number beside it - has to reach the same listener. Without this only
+            // the ring around the icon reacts and pressing the number itself does nothing.
+            // Clickable but NOT focusable on purpose: the D-pad focus stays on the circle, so
+            // the focus ring and the focus behaviour are exactly what they were.
+            vh.mIcon.setClickable(true);
+            vh.mIcon.setFocusable(false);
+            vh.mIcon.setOnClickListener(listener);
         }
 
         public void setOnLongClickListener(ViewHolder viewHolder,
                                        View.OnLongClickListener listener) {
-            ((ActionViewHolder) viewHolder).mFocusableView.setOnLongClickListener(listener);
+            ActionViewHolder vh = (ActionViewHolder) viewHolder;
+            vh.mFocusableView.setOnLongClickListener(listener);
+            vh.mIcon.setOnLongClickListener(listener);
+        }
+
+        /** GRTubeYou: the number this action wants beside its icon, or null if it wants none. */
+        private CharSequence badgeOf(Action action) {
+            if (!(action instanceof CountBadgeAction)) {
+                return null;
+            }
+
+            CharSequence badge = ((CountBadgeAction) action).getBadgeText();
+            if (badge == null || badge.toString().trim().isEmpty()) {
+                return null;
+            }
+
+            return badge;
+        }
+
+        /**
+         * GRTubeYou: resize and reposition the icon box, or restore it.
+         *
+         * <p>A width of zero means "use the layout's width", which is how the original
+         * geometry comes back without a second copy of it lying around. The restore matters
+         * because these holders are recycled: one that once showed a count is reused for the
+         * gear button moments later, and without it every following control would keep the
+         * wider box and the left margin.
+         */
+        private void setIconGeometry(ActionViewHolder vh, int widthPx, int gravity, int marginStart) {
+            ViewGroup.LayoutParams lp = vh.mIcon.getLayoutParams();
+            int width = widthPx > 0 ? widthPx : vh.mDefaultIconWidth;
+            boolean changed = lp.width != width;
+
+            if (lp instanceof FrameLayout.LayoutParams) {
+                FrameLayout.LayoutParams fp = (FrameLayout.LayoutParams) lp;
+                int g = widthPx > 0 ? gravity : vh.mDefaultIconGravity;
+                int ms = widthPx > 0 ? marginStart : vh.mDefaultIconMarginStart;
+
+                if (fp.gravity != g) {
+                    fp.gravity = g;
+                    changed = true;
+                }
+                if (fp.leftMargin != ms) {
+                    fp.leftMargin = ms;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                lp.width = width;
+                vh.mIcon.setLayoutParams(lp);
+            }
         }
     }
 }

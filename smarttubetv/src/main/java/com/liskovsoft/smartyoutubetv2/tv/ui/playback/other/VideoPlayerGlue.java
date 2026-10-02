@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import androidx.leanback.media.PlaybackGlueHost;
 import androidx.leanback.media.PlaybackTransportControlGlue;
 import androidx.leanback.media.PlayerAdapter;
@@ -90,6 +91,10 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
     private final GeneralData mGeneralData;
     private int mPreviousAction = KeyEvent.ACTION_UP;
 
+    // GRTubeYou: the two actions that show a count beside their icon.
+    private ThumbsUpAction mThumbsUpAction;
+    private ThumbsDownAction mThumbsDownAction;
+
     public VideoPlayerGlue(
             Context context,
             PlayerAdapter playerAdapter,
@@ -112,6 +117,10 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         thumbsDownAction.setBoundAction(thumbsUpAction);
         putAction(thumbsUpAction);
         putAction(thumbsDownAction);
+
+        // GRTubeYou: kept so the counts can be pushed onto them when a video arrives.
+        mThumbsUpAction = thumbsUpAction;
+        mThumbsDownAction = thumbsDownAction;
 
         putAction(new HighQualityAction(context));
         putAction(new PlaybackModeAction(context));
@@ -577,6 +586,34 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         }
 
         return action.getId() == R.id.action_chat;
+    }
+
+    /**
+     * GRTubeYou: hand the video's counts to the two thumb buttons.
+     *
+     * <p>Reads the fields the video already carries - the same strings that were shown in the
+     * line under the title until this release, and that {@code SuggestionsController} fills in
+     * on the same code path as before. No second store, no second fetch: when the counts change
+     * later, whoever changes them calls this again.
+     *
+     * <p>Null is passed straight through on purpose. Before the counts arrive - and whenever
+     * the likes counter setting is off, which is what {@code SuggestionsController} does by
+     * clearing both fields - the buttons must show the icon alone, exactly as they did before
+     * this existed, rather than a number reading "0".
+     */
+    @Override
+    public void setVideo(Video video) {
+        super.setVideo(video);
+
+        if (mThumbsUpAction != null) {
+            mThumbsUpAction.setBadgeText(video == null ? null : video.likeCount);
+            invalidateUi(mThumbsUpAction);
+        }
+
+        if (mThumbsDownAction != null) {
+            mThumbsDownAction.setBadgeText(video == null ? null : video.dislikeCount);
+            invalidateUi(mThumbsDownAction);
+        }
     }
 
     @Override
