@@ -27,15 +27,15 @@ public final class BugReportSender {
     /**
      * GRTubeYou: the receiver, including its secret path.
      *
-     * <p>Left empty on purpose. An endpoint that is not deployed must make the tile say so,
-     * not send reports into a void and report success. Fill this in after deploying
-     * {@code bug-report-worker.js} - see the header of that file for the steps.
+     * <p>Deployed, so this is no longer empty. It is still only a URL and nothing else, which
+     * is the whole point: the Telegram token and the chat id live in the receiver as Worker
+     * secrets, and the bot token is not in this file, not in the repository, and not anywhere
+     * inside the APK. A long random path is the single thing shipped, and rotating a leaked
+     * path is one secret change plus a rebuild.
      *
-     * <p>It is a URL and nothing else, which is what makes it safe to ship: rotating a
-     * compromised path is a rebuild here and a secret change in the worker, and the token
-     * itself is never in the app.
+     * <p>The receiver is bug-report-worker.js in grtubeyou-dist.
      */
-    private static final String ENDPOINT = "";
+    private static final String ENDPOINT = "https://grtubeyou-bug-reports.grtubeyou-reports.workers.dev/zndrh9wkjgashh9bo9ttqgwf5wgcme";
 
     /**
      * The backslash-u prefix for a control character escape.

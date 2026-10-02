@@ -85,7 +85,13 @@ public final class VoskSearchBinder {
 
             @Override
             public void onVoskNeedsPermission() {
-                if (!requestAudio(app)) {
+                // NOTE: `context`, not `app`. requestPermissions only exists on an Activity,
+                // so handing it the application context made the instanceof check below always
+                // fail - the permission was never actually requested, and the user was told it
+                // was needed on a button that could never work without it. Silent, permanent,
+                // and only on the first run: the permission is never granted, so every later
+                // press took this same dead branch.
+                if (!requestAudio(context)) {
                     message(app, R.string.voice_search_need_permission);
                 }
             }

@@ -492,7 +492,7 @@ public class SearchSupportFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isVoskSelected()) {
+        if (shouldUseVosk()) {
             attachVoskRecognizer();
         } else if (mSpeechRecognitionCallback == null && null == mSpeechRecognizer) {
             mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(
@@ -527,6 +527,42 @@ public class SearchSupportFragment extends Fragment {
     private boolean isVoskSelected() {
         return SearchData.instance(requireContext()).getSpeechRecognizerType()
                 == SearchData.SPEECH_RECOGNIZER_VOSK;
+    }
+
+    /**
+     * GRTubeYou: whether the offline recognizer should be the one on the microphone.
+     *
+     * <p>True when the user picked it, and also when they did not pick it but the system
+     * engine is not actually there. That second case is the common one on a TV box and it is
+     * why the button looked broken:
+     *
+     * <ul>
+     *   <li>the stored default is {@code SPEECH_RECOGNIZER_SYSTEM};
+     *   <li>on a box without Google Services, {@code createSpeechRecognizer} returns null, so
+     *       the bar ends up holding no recognizer at all;
+     *   <li>leanback's orb then runs {@code startRecognition()}, which returns silently when
+     *       both its recognizer and its callback are null - no sound, no message, no state
+     *       change. A button that does nothing is indistinguishable from a broken one;
+     *   <li>the explanatory message existed, but only on the intent path. A press of the orb
+     *       never reached it, which is why the failure was silent.
+     * </ul>
+     *
+     * <p>So rather than asking the user to find a setting first, the offline engine takes over
+     * when there is nothing else to take the press. An explicit choice of another engine is
+     * still honoured whenever that engine exists.
+     */
+    private boolean shouldUseVosk() {
+        if (isVoskSelected()) {
+            return true;
+        }
+
+        boolean systemEngineAvailable = SpeechRecognizer.isRecognitionAvailable(getContext());
+
+        if (!systemEngineAvailable) {
+            Log.d(TAG, "no system recognition service, using the offline recognizer instead");
+        }
+
+        return !systemEngineAvailable;
     }
 
     /**
@@ -607,7 +643,7 @@ public class SearchSupportFragment extends Fragment {
         // voice recognition service" and the user sees an orb that does nothing
         // at all - that is exactly what the offline engine exists to fix, but only
         // if they are told it exists. Check first and name the way out.
-        if (!isVoskSelected() && !SpeechRecognizer.isRecognitionAvailable(getContext())) {
+        if (!shouldUseVosk() && !SpeechRecognizer.isRecognitionAvailable(getContext())) {
             Log.d(TAG, "no system recognition service, the mic would be dead");
             // Fully qualified on purpose: this file imports androidx.leanback.R, so a
             // bare R.string would resolve against leanback's resources and not

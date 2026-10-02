@@ -159,6 +159,47 @@ public class BugReportPayloadTest {
         assertEquals(MAX_LOG_CHARS, truncateLikeCollect(sb.toString()).length());
     }
 
+    // ------------------------------------------------------------------ endpoint
+
+    @Test
+    public void theReceiverIsConfigured() {
+        // This is the guard that 32.67 beta1 shipped without: the endpoint was still an empty
+        // string, so the tile reported the feature as not set up and every report was refused
+        // before it left the device. A test that reads the real constant makes that state
+        // visible at build time instead of after a user reports a dead button.
+        assertTrue("BugReportSender.ENDPOINT is empty - the receiver was never filled in",
+                BugReportSender.isConfigured());
+    }
+
+    @Test
+    public void theEndpointIsAPlainUrlCarryingNoCredential() throws Exception {
+        String endpoint = readEndpoint();
+
+        assertTrue("must be https, got: " + endpoint, endpoint.startsWith("https://"));
+
+        // No token, no chat id, no key: the app must carry an address and nothing else. A token
+        // here would be a token handed to everyone who downloads the APK.
+        assertFalse("the app must not carry the bot token",
+                endpoint.matches(".*\\d{8,}:[A-Za-z0-9_-]{30,}.*"));
+    }
+
+    @Test
+    public void theSecretPathIsLongEnoughNotToBeGuessed() throws Exception {
+        String endpoint = readEndpoint();
+        String path = endpoint.substring(endpoint.lastIndexOf('/') + 1);
+
+        // 30 characters off a 29-symbol alphabet with no ambiguous symbols. Below about 20 the
+        // path is worth a sweep, and a sweep here means spam in the developer's chat.
+        assertTrue("secret path is only " + path.length() + " characters: " + path,
+                path.length() >= 24);
+    }
+
+    private static String readEndpoint() throws Exception {
+        java.lang.reflect.Field field = BugReportSender.class.getDeclaredField("ENDPOINT");
+        field.setAccessible(true);
+        return (String) field.get(null);
+    }
+
     // ------------------------------------------------------------------ status handling
 
     private static String explain(int status) throws Exception {
