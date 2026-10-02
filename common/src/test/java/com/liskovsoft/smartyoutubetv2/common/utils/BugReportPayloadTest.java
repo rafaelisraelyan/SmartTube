@@ -33,8 +33,18 @@ import static org.junit.Assert.assertTrue;
  * those need a real device, and {@code adb install} does not work on this machine.
  */
 public class BugReportPayloadTest {
-    /** The cap {@code BugReport} applies. Mirrored, not read, so a change in one is visible. */
-    private static final int MAX_LOG_CHARS = 60_000;
+    /**
+     * The cap {@code BugReport} applies, read rather than mirrored.
+     *
+     * <p>Copying the number here would have been worse than useless: the cap went from 60k to
+     * 600k when the log became a file attachment, and a mirrored copy would have kept testing
+     * 60k while the app built 600k - green, and asserting nothing about the real behaviour.
+     */
+    private static int maxLogChars() throws Exception {
+        java.lang.reflect.Field field = BugReport.class.getDeclaredField("MAX_LOG_CHARS");
+        field.setAccessible(true);
+        return field.getInt(null);
+    }
 
     // ------------------------------------------------------------------ JSON quoting
 
@@ -113,26 +123,37 @@ public class BugReportPayloadTest {
      * Context. The point being pinned down is the rule - which end survives - not the string
      * building, and the rule is the thing that can silently be written backwards.
      */
-    private static String truncateLikeCollect(String log) {
-        if (log.length() <= MAX_LOG_CHARS) {
+    private static String truncateLikeCollect(String log) throws Exception {
+        int cap = maxLogChars();
+
+        if (log.length() <= cap) {
             return log;
         }
-        return log.substring(log.length() - MAX_LOG_CHARS);
+        return log.substring(log.length() - cap);
     }
 
     @Test
-    public void aShortLogIsNotTruncated() {
+    public void aShortLogIsNotTruncated() throws Exception {
         String log = "start\nmiddle\nend";
         assertEquals(log, truncateLikeCollect(log));
     }
 
     @Test
-    public void truncationKeepsTheTailNotTheHead() {
+    public void theCapIsLargeEnoughForAWholeSession() throws Exception {
+        // 600k characters is what makes the file attachment worth having. At the old 60k a
+        // real report was cut down to a fragment and still arrived as eighteen messages.
+        assertTrue("log cap is only " + maxLogChars() + " characters",
+                maxLogChars() >= 500_000);
+    }
+
+    @Test
+    public void truncationKeepsTheTailNotTheHead() throws Exception {
         // The exception is at the end of a session. A head-kept report would drop it and still
         // look like a complete report, which is the failure this guards.
+        int cap = maxLogChars();
         StringBuilder sb = new StringBuilder();
         sb.append("THE-VERY-FIRST-LINE\n");
-        while (sb.length() < MAX_LOG_CHARS + 5_000) {
+        while (sb.length() < cap + 5_000) {
             sb.append("filler line\n");
         }
         sb.append("THE-VERY-LAST-LINE\n");
@@ -143,20 +164,21 @@ public class BugReportPayloadTest {
                 truncated.contains("THE-VERY-FIRST-LINE"));
         assertTrue("the last line is the one worth keeping",
                 truncated.contains("THE-VERY-LAST-LINE"));
-        assertEquals(MAX_LOG_CHARS, truncated.length());
+        assertEquals(cap, truncated.length());
     }
 
     @Test
-    public void aLogExactlyAtTheCapIsKeptWhole() {
+    public void aLogExactlyAtTheCapIsKeptWhole() throws Exception {
         // Off by one here would truncate a report that fit, and the notice would then claim
         // lines were dropped when none were.
+        int cap = maxLogChars();
         StringBuilder sb = new StringBuilder();
-        while (sb.length() < MAX_LOG_CHARS) {
+        while (sb.length() < cap) {
             sb.append('x');
         }
 
-        assertEquals(MAX_LOG_CHARS, sb.length());
-        assertEquals(MAX_LOG_CHARS, truncateLikeCollect(sb.toString()).length());
+        assertEquals(cap, sb.length());
+        assertEquals(cap, truncateLikeCollect(sb.toString()).length());
     }
 
     // ------------------------------------------------------------------ endpoint

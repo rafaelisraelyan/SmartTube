@@ -33,13 +33,16 @@ import java.util.List;
  */
 public final class BugReport {
     /**
-     * Characters of log kept. 60k is roughly 700-900 lines, which covers a normal session
-     * and stays inside the receiver's 512 KB body limit once JSON-encoded.
+     * Characters of log kept. The receiver ships the log as a .txt attachment, so this can be
+     * generous: 600k is roughly 6000-8000 lines, which is a whole session rather than a
+     * glimpse of one. It was 60k when the log travelled as chat messages, where that number
+     * became eighteen unreadable bubbles - the right size for neither, and too small for the
+     * crash to be in it.
      */
-    private static final int MAX_LOG_CHARS = 60_000;
+    private static final int MAX_LOG_CHARS = 600_000;
 
     /** logcat lines to read. Bounded so a chatty device cannot stall the report. */
-    private static final int MAX_LOGCAT_LINES = 600;
+    private static final int MAX_LOGCAT_LINES = 4000;
 
     /** Hard stop on the logcat read, so a hung process cannot hang the report. */
     private static final int LOGCAT_TIMEOUT_MS = 8_000;
