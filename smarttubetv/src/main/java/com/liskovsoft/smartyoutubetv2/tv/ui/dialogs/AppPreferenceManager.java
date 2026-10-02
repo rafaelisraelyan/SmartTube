@@ -17,6 +17,7 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.CommentsPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.StringListPreference;
 import com.liskovsoft.smartyoutubetv2.tv.ui.dialogs.other.UpdateProgressPreference;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -269,6 +270,26 @@ public class AppPreferenceManager {
     }
 
     public ListPreferenceData createListPreferenceData(List<OptionItem> items) {
+        // GRTubeYou: a null list used to be dereferenced straight away on items.size().
+        // It is reachable: the video format list is null until ExoPlayer has a video
+        // renderer, and an option list built from a null source comes back null rather
+        // than empty. Every radio list in the app passes through here, so the guard is
+        // here rather than only at the one call site that was found.
+        //
+        // Skipping a null entry matters as well as a null list: UiOptionItem.from returns
+        // null for a null item, so a list can carry holes in it.
+        if (items == null) {
+            return new ListPreferenceData(new CharSequence[0], new CharSequence[0], null, new HashSet<String>());
+        }
+
+        List<OptionItem> safe = new ArrayList<>(items.size());
+        for (OptionItem item : items) {
+            if (item != null) {
+                safe.add(item);
+            }
+        }
+        items = safe;
+
         CharSequence[] titles = new CharSequence[items.size()];
         CharSequence[] hashes = new CharSequence[items.size()];
         String defaultValue = null;

@@ -11,6 +11,17 @@
          used to sit on the control rows (speed, quality, subtitles, repeat, PiP,
          description, comments, queue, report). -->
     <item name="action_player_settings" type="id"/>
+    <!--
+      GRTubeYou: the quality button on the control row.
+
+      Its own id, deliberately not lb_control_high_quality. That id is what the gear's
+      "Playback" entry dispatches, and it opens the whole "Extended playback settings"
+      dialog - nine categories. The row button is about one thing, so it carries its own id
+      and opens just the video format list. Reusing the other id would have made the two
+      entry points indistinguishable, and the only way to tell them apart would have been
+      which button was pressed.
+    -->
+    <item name="action_video_quality" type="id"/>
     <item name="action_video_speed" type="id"/>
     <item name="action_repeat" type="id"/>
     <item name="action_search" type="id"/>

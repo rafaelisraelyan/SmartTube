@@ -788,4 +788,8 @@
     <string name="bug_report_sent_truncated">Спасибо, отчёт отправлен. Лог был слишком длинным, поэтому он сокращён</string>
     <string name="bug_report_failed">Не удалось отправить отчёт: %1$s</string>
     <string name="bug_report_no_receiver">Приёмник отчётов в этой сборке ещё не настроен</string>
+
+    <!-- GRTubeYou: кнопка качества видео -->
+    <string name="extended_playback_settings">Расширенные настройки воспроизведения</string>
+    <string name="video_quality_unavailable">Вариантов качества пока нет. Попробуйте, когда видео запустится.</string>
 </resources>

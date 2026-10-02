@@ -51,14 +51,33 @@ public class PlayerTweaksData implements ProfileChangeListener {
      * hard to find.
      *
      * <p>Kept on the rows: play/pause, previous, next, channel, like, dislike,
-     * subscribe. Everything else moved behind the gear button, which opens
-     * {@code PlayerSettingsPresenter} - speed, quality, subtitles, repeat, PiP,
-     * description, comments, queue, screen dimming, search and the report dialog.
+     * subscribe, and video quality. Quality was moved behind the gear with everything
+     * else, and was put back on the row after a viewer pointed out that hunting through a
+     * settings dialog to change 1440p back to 1080p is a step too many. Everything else
+     * still lives in the gear dialog - speed, subtitles, repeat, PiP, description,
+     * comments, queue, screen dimming, search and the report dialog.
      *
      * <p>Nothing was deleted. These flags still gate each button, so anyone can
      * switch any of them back on in Settings -> Player -> Buttons.
      */
     public static final int PLAYER_BUTTON_DEFAULT = PLAYER_BUTTON_PLAY_PAUSE | PLAYER_BUTTON_PREVIOUS |
+            PLAYER_BUTTON_NEXT | PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBSCRIBE |
+            PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_HIGH_QUALITY |
+            PLAYER_BUTTON_PLAYER_SETTINGS;
+
+    /**
+     * GRTubeYou: the trimmed set as it shipped in 32.67 beta1/beta2 - everything above
+     * except quality. Kept only so the migration can recognise it.
+     *
+     * <p>This exists because the quality button went back on the row after those betas
+     * were published, and {@code mPlayerButtons} is persisted. Changing
+     * {@link #PLAYER_BUTTON_DEFAULT} therefore does nothing for anyone who already has
+     * the app installed - which is everybody reading a changelog. Without this second
+     * migration the button would appear only on fresh installs and on devices that had
+     * never enabled the setting.
+     */
+    private static final int PLAYER_BUTTON_DEFAULT_GRTUBEYOU_V1 =
+            PLAYER_BUTTON_PLAY_PAUSE | PLAYER_BUTTON_PREVIOUS |
             PLAYER_BUTTON_NEXT | PLAYER_BUTTON_OPEN_CHANNEL | PLAYER_BUTTON_SUBSCRIBE |
             PLAYER_BUTTON_LIKE | PLAYER_BUTTON_DISLIKE | PLAYER_BUTTON_PLAYER_SETTINGS;
 
@@ -833,6 +852,15 @@ public class PlayerTweaksData implements ProfileChangeListener {
         // still exactly the old default has clearly not touched this setting, so
         // move them onto the trimmed one. A custom set is left untouched.
         if (mPlayerButtons == PLAYER_BUTTON_DEFAULT_LEGACY) {
+            mPlayerButtons = PLAYER_BUTTON_DEFAULT;
+        }
+
+        // GRTubeYou: same reasoning one step on. The quality button went back on the row
+        // after 32.67 beta2 shipped, so anyone still holding exactly the beta default has
+        // not touched this setting and should see the button. Tested against the exact mask,
+        // not a superset test: "contains every flag we want" would also match a viewer who
+        // deliberately switched quality OFF, and would switch it back on behind their back.
+        if (mPlayerButtons == PLAYER_BUTTON_DEFAULT_GRTUBEYOU_V1) {
             mPlayerButtons = PLAYER_BUTTON_DEFAULT;
         }
     }

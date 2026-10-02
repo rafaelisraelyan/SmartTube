@@ -40,6 +40,8 @@ public class HQDialogController extends BasePlayerController {
     public void onButtonClicked(int buttonId, int buttonState) {
         if (buttonId == R.id.lb_control_high_quality) {
             onHighQualityClicked();
+        } else if (buttonId == R.id.action_video_quality) {
+            onVideoQualityClicked();
         }
     }
 
@@ -63,6 +65,48 @@ public class HQDialogController extends BasePlayerController {
         mAppDialogPresenter.showDialog(getContext().getString(R.string.playback_settings), this::onDialogHide);
     }
 
+    /**
+     * GRTubeYou: the quality button on the control row.
+     *
+     * <p>Opens the video format list on its own, not the nine-category "extended playback
+     * settings" dialog. The button says "quality" and nothing else, so a viewer who pressed
+     * it to go from 1440p back to 1080p should land on the list, not on a menu they have to
+     * read to find the same list inside.
+     *
+     * <p>Audio formats are left out on purpose: they are a different decision with a different
+     * failure mode, and the button that says "quality" should not be the one that loses sound.
+     */
+    private void onVideoQualityClicked() {
+        if (getPlayer() == null) {
+            return;
+        }
+
+        List<FormatItem> videoFormats = getPlayer().getVideoFormats();
+
+        // The list is null until ExoPlayer has a video renderer, and empty for audio-only
+        // streams. Both were reachable by pressing this button at the wrong moment - right
+        // after starting a video, or on a radio stream - and both ended in the same crash:
+        // a null list became a radio-list category, and the preference builder dereferenced
+        // it. Saying so is the honest outcome, and it cannot crash.
+        if (videoFormats == null || videoFormats.isEmpty()) {
+            MessageHelpers.showMessage(getContext(), R.string.video_quality_unavailable);
+            return;
+        }
+
+        fitVideoIntoDialog();
+
+        addCategoryInt(OptionCategory.from(
+                VIDEO_FORMATS_ID,
+                OptionCategory.TYPE_RADIO_LIST,
+                getContext().getString(R.string.action_high_quality),
+                UiOptionItem.from(videoFormats, this::selectFormatOption, getContext().getString(R.string.option_disabled))));
+
+        appendOptions(mCategoriesInt);
+        appendOptions(mCategories);
+
+        mAppDialogPresenter.showDialog(getContext().getString(R.string.action_high_quality), this::onDialogHide);
+    }
+
     private void addQualityCategories() {
         if (getPlayer() == null) {
             return;
@@ -74,16 +118,23 @@ public class HQDialogController extends BasePlayerController {
         List<FormatItem> audioFormats = getPlayer().getAudioFormats();
         String audioFormatsTitle = getContext().getString(R.string.title_audio_formats);
 
-        addCategoryInt(OptionCategory.from(
-                VIDEO_FORMATS_ID,
-                OptionCategory.TYPE_RADIO_LIST,
-                videoFormatsTitle,
-                UiOptionItem.from(videoFormats, this::selectFormatOption, getContext().getString(R.string.option_disabled))));
-        addCategoryInt(OptionCategory.from(
-                AUDIO_FORMATS_ID,
-                OptionCategory.TYPE_RADIO_LIST,
-                audioFormatsTitle,
-                UiOptionItem.from(audioFormats, this::selectFormatOption, getContext().getString(R.string.option_disabled))));
+        // Only added when there is something to show. A null list used to be handed straight
+        // through to the radio list, where items.size() crashed the app.
+        if (videoFormats != null && !videoFormats.isEmpty()) {
+            addCategoryInt(OptionCategory.from(
+                    VIDEO_FORMATS_ID,
+                    OptionCategory.TYPE_RADIO_LIST,
+                    videoFormatsTitle,
+                    UiOptionItem.from(videoFormats, this::selectFormatOption, getContext().getString(R.string.option_disabled))));
+        }
+
+        if (audioFormats != null && !audioFormats.isEmpty()) {
+            addCategoryInt(OptionCategory.from(
+                    AUDIO_FORMATS_ID,
+                    OptionCategory.TYPE_RADIO_LIST,
+                    audioFormatsTitle,
+                    UiOptionItem.from(audioFormats, this::selectFormatOption, getContext().getString(R.string.option_disabled))));
+        }
     }
 
     private void selectFormatOption(OptionItem option) {
@@ -92,6 +143,13 @@ public class HQDialogController extends BasePlayerController {
         }
 
         FormatItem formatItem = UiOptionItem.toFormat(option);
+
+        // toFormat returns null for anything that is not one of our option items, and every
+        // line below dereferences it. Losing the tap is better than losing the app.
+        if (formatItem == null) {
+            return;
+        }
+
         getPlayer().setFormat(formatItem);
         persistFormat(formatItem);
 

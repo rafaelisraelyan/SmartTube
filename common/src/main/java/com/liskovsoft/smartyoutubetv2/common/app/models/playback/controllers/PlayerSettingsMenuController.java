@@ -77,7 +77,10 @@ public class PlayerSettingsMenuController extends BasePlayerController {
         addItem(R.string.action_video_info, R.id.action_info, false);
         addItem(R.string.screen_dimming, R.id.action_screen_dimming, false);
         addItem(R.string.action_search, R.id.action_search, false);
-        addItem(R.string.playback_settings, R.id.lb_control_high_quality, false);
+        // GRTubeYou: was labelled "playback settings", which is what the gear itself is called -
+        // so the entry read as the dialog it was already inside. It opens the extended
+        // playback dialog, and there is an existing string for exactly that.
+        addItem(R.string.extended_playback_settings, R.id.lb_control_high_quality, false);
         addItem(R.string.run_in_background, R.id.action_pip, false);
         addItem(R.string.open_chat, R.id.action_chat, false);
         addItem(R.string.action_playback_queue, R.id.action_playback_queue, false);

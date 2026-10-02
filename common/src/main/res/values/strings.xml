@@ -813,4 +813,12 @@
   <string name="bug_report_sent_truncated">Thank you, the report is sent. The log was too long, so it was shortened</string>
   <string name="bug_report_failed">Could not send the report: %1$s</string>
   <string name="bug_report_no_receiver">Bug reports are not set up in this build yet</string>
+
+  <!--
+    GRTubeYou: the video quality button. `action_high_quality` already existed in every
+    translation and was never wired to anything - the button borrowed the gear's own label
+    instead. -->
+  <string name="extended_playback_settings">Extended playback settings</string>
+  <!-- Said when the list cannot be built, which is also when the old code crashed. -->
+  <string name="video_quality_unavailable">No video quality options yet. Try again once the video has started.</string>
 </resources>
