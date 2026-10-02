@@ -1,0 +1,23 @@
+<!--
+    GRTubeYou: the soft darkening behind the title and the metadata line.
+
+    Two things were wrong with the text sitting directly on the video: a bright frame washed
+    it out, and a busy one broke it up. This is the cheapest honest fix - a gradient that is
+    strongest at the very top, where the title is, and gone before it reaches the picture's
+    middle. No panel, no edge, no rectangle: the top of the frame is already a boundary, and a
+    second one would read as a box.
+
+    Alpha rather than a solid colour, so the video is never actually hidden - it only stops
+    competing with the text. 0xB0 at the top edge falls to fully transparent at the bottom of
+    this strip, which is a fifth of the screen: dark enough under the title, invisible by the
+    time the picture proper begins.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#B0000000"
+        android:centerColor="#66000000"
+        android:endColor="#00000000"
+        android:type="linear" />
+</shape>

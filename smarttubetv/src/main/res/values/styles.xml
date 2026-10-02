@@ -45,6 +45,24 @@
         <!-- Fix 'screen off' mode on some devices? -->
         <item tools:targetApi="18" name="android:windowOverscan">true</item>
         <item name="android:windowContentOverlay">@null</item>
+
+        <!--
+            GRTubeYou: the player's text hierarchy.
+
+            The overlay is built from leanback's attribute-based styles, so this is where its
+            appearance belongs - the layouts and the code that read these attributes stay exactly
+            as they are. Redirecting the three description attributes is what makes the title,
+            the metadata line and the description read as three levels instead of one block; the
+            fourth is the time readout, which was pulling the eye off the picture at full
+            brightness.
+
+            Every colour scheme in this file inherits from this style, so all of them get it at
+            once and none of them can drift.
+        -->
+        <item name="detailsDescriptionTitleStyle">@style/App.Player.TitleStyle</item>
+        <item name="detailsDescriptionSubtitleStyle">@style/App.Player.MetadataStyle</item>
+        <item name="detailsDescriptionBodyStyle">@style/App.Player.ChapterStyle</item>
+        <item name="playbackControlsTimeStyle">@style/App.Player.TimeStyle</item>
     </style>
     <style name="App.Theme.Leanback.Browse" parent="Theme.Leanback.Browse">
         <item name="android:windowBackground">@color/shelf_background_dark</item>

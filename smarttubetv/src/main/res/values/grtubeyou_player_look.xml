@@ -1,0 +1,53 @@
+<!--
+    GRTubeYou: the player's look, changed through resources only.
+
+    Nothing here alters behaviour. These are the same attributes leanback's overlay already
+    reads, re-declared with quieter values, so no layout and no code had to change - which is
+    what keeps this an improvement to the existing player rather than a second UI built on top
+    of it.
+-->
+<resources>
+
+    <!--
+        The timeline.
+
+        The bar itself goes from 4dp to 3dp, and the played part from 6dp to 5dp. On a 1080p
+        frame that is the difference between a bar and a rule: the old pair was drawn thick
+        enough that the coloured chapter segments read as separate objects sitting on the line
+        rather than as parts of it.
+
+        The radius shrinks in step with the played part, which is what keeps its end round
+        instead of turning into a lozenge - the same value that smoothed the line would flatten
+        the cap.
+
+        The 28dp bar height is NOT touched. That is not decoration: it is the height the row
+        occupies and therefore how easy the bar is to grab from a sofa, and it is why the row
+        has padding around a 3dp line in the first place. Making the line thinner does not
+        change any of that.
+    -->
+    <dimen name="lb_playback_transport_progressbar_height">28dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_bar_height">3dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_active_bar_height">5dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_active_radius">5dp</dimen>
+
+    <!--
+        The height of the two readability gradients.
+
+        These cannot be percentages: AAPT rejects a percentage for layout_height, so the bands
+        are sized absolutely. On the usual Android TV panel - 1080p at xhdpi, which is 540dp
+        tall - 100dp is a fifth of the screen and 170dp a bit under a third, which is the
+        proportion they were chosen for. On a 720p panel they cover proportionally more, and
+        that is the safe direction to err in: both gradients end in fully transparent, so the
+        worst case is a picture that is a little more gently darkened at the edges than
+        intended, not a band with a visible line across it.
+    -->
+    <dimen name="grtubeyou_player_scrim_top_height">100dp</dimen>
+    <dimen name="grtubeyou_player_scrim_bottom_height">170dp</dimen>
+
+    <!--
+        The focus and ripple fill lives in colors.xml, not here: the app already overrides
+        lb_control_button_color, and a second declaration of the same resource in another file
+        is a duplicate-resource build failure rather than a preference. See that file.
+    -->
+
+</resources>

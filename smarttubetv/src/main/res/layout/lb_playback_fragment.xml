@@ -113,6 +113,34 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <!--
+        GRTubeYou: the readability gradients.
+
+        Placed here rather than inside playback_fragment_background, because that container
+        belongs to BackgroundManager and it swaps its own children - anything left in it can be
+        replaced along with the blurred backdrop.
+
+        Order matters in a FrameLayout: later children paint on top. These sit after the video,
+        the subtitles and the background, and before playback_controls_dock, so the text and the
+        transport row are darkened along with the picture but are never darkened themselves.
+        They are plain Views with no ids, no behaviour and no listeners: they exist to be
+        pixels, and nothing in the player talks to them.
+
+        The top one covers a fifth of the height, the bottom a bit over a third. Neither has a
+        visible edge - both fade to fully transparent - so the picture is never boxed in.
+    -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/grtubeyou_player_scrim_top_height"
+        android:layout_gravity="top"
+        android:background="@drawable/grtubeyou_player_scrim_top" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/grtubeyou_player_scrim_bottom_height"
+        android:layout_gravity="bottom"
+        android:background="@drawable/grtubeyou_player_scrim_bottom" />
+
     <androidx.leanback.widget.NonOverlappingFrameLayout
             android:id="@+id/playback_controls_dock"
             android:transitionGroup="true"

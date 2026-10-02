@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- MOD: Focused player button color (default: #66EEEEEE, new: #E8FFFFFF) -->
-    <color name="lb_control_button_color">#86EEEEEE</color>
+    <!--
+        MOD: the fill of a focused control button, and the ripple.
+
+        Was #86EEEEEE - 52% white, a SmartTube brightening of leanback's #66EEEEEE. That is what
+        made the bottom row read as a line of bright discs rather than as quiet controls: the
+        focus fill is a large disc, so its weight is the weight of the whole row.
+
+        Back to the library value. Softer, not weaker - the focused button still has to be
+        findable at a glance on a bright frame, and 40% is what leanback ships for exactly that.
+        The shape and the diameter are untouched, so the buttons remain circles.
+
+        (The old comment here claimed #E8FFFFFF, which was never the value in this file.)
+    -->
+    <color name="lb_control_button_color">#66EEEEEE</color>
 
     <!-- Common colors -->
     <color name="default_background_gradient_start">#000000</color>

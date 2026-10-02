@@ -1,0 +1,22 @@
+<!--
+    GRTubeYou: the soft darkening under the controls.
+
+    The progress bar, the button row and the time block all sit on the video with nothing behind
+    them, which is why they read as controls floating over a picture rather than as one band.
+    This gradient runs from fully transparent, three quarters of the way up, to 0xD0 at the very
+    bottom - enough to hold white text and the thin progress line over a bright frame, and not
+    so much that the lower third of the video goes grey.
+
+    It deliberately has no top edge. The fade begins well above the progress bar, so the
+    transition from picture to darkened area is gradual, which is the whole point - a scrim with
+    a visible starting line is worse than no scrim.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="#D0000000"
+        android:centerColor="#8A000000"
+        android:endColor="#00000000"
+        android:type="linear" />
+</shape>

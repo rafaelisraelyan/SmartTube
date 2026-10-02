@@ -173,6 +173,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:textSize="15sp"
                     style="?attr/playbackControlsTimeStyle" />
 
                 <RelativeLayout android:id="@+id/current_time_wrapper"
@@ -188,6 +189,7 @@
                         android:layout_height="wrap_content"
                         android:layout_toStartOf="@+id/separate_time"
                         android:layout_marginStart="@dimen/lb_playback_transport_time_margin"
+                        android:textSize="13sp"
                         style="?attr/playbackControlsTimeStyle" />
 
                     <TextView

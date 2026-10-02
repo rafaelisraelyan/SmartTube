@@ -1,0 +1,72 @@
+<!--
+    GRTubeYou: the player's text hierarchy.
+
+    Three lines, read in this order, and they should look like they matter in that order:
+
+      title      - the video. Largest, near white, medium weight.
+      metadata   - channel, views, date. Noticeably smaller and grey.
+      chapter    - the description. Smaller again and quieter still.
+
+    What was wrong before: the title was 34sp in sans-serif-light and the metadata 16sp in
+    regular, which is only a hair apart in weight and a lot apart in size - so the two read as
+    the same block, with the title looking thin rather than important. And the description was
+    the same colour as the metadata, so all three lines competed at once.
+
+    These inherit from leanback's styles on purpose. Max lines, ellipsize, includeFontPadding
+    and the ResizingTextView settings all stay as they are - changing the look must not change
+    how a long title behaves, which the app has already patched around twice.
+
+    Only three values move per style: size, colour and weight.
+-->
+<resources>
+
+    <!-- The title: the largest thing on screen, but no longer a wall of light text. -->
+    <style name="App.Player.TitleAppearance" parent="TextAppearance.Leanback.DetailsDescriptionTitle">
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">#FFF7F7F8</item>
+        <!-- Medium rather than light: at 34sp the light weight looked thin on a video, and on
+             a bright frame it looked like it was about to disappear. -->
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="App.Player.TitleStyle" parent="Widget.Leanback.DetailsDescriptionTitleStyle">
+        <item name="android:textAppearance">@style/App.Player.TitleAppearance</item>
+    </style>
+
+    <!-- The metadata line: clearly secondary, and grey enough to stop competing. -->
+    <style name="App.Player.MetadataAppearance" parent="TextAppearance.Leanback.DetailsDescriptionSubtitle">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">#B8FFFFFF</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="App.Player.MetadataStyle" parent="Widget.Leanback.DetailsDescriptionSubtitleStyle">
+        <item name="android:textAppearance">@style/App.Player.MetadataAppearance</item>
+    </style>
+
+    <!-- The description: the quietest of the three, and dimmer than the metadata on purpose. -->
+    <style name="App.Player.ChapterAppearance" parent="TextAppearance.Leanback.DetailsDescriptionBody">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#8CFFFFFF</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="App.Player.ChapterStyle" parent="Widget.Leanback.DetailsDescriptionBodyStyle">
+        <item name="android:textAppearance">@style/App.Player.ChapterAppearance</item>
+    </style>
+
+    <!--
+        The time block and the two lines above the controls. One step down from the metadata,
+        and lighter than they were - they are reference information, read at a glance, and at
+        full brightness they pulled the eye away from the picture.
+    -->
+    <style name="App.Player.TimeAppearance" parent="TextAppearance.Leanback.PlaybackControlsTime">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#A6FFFFFF</item>
+    </style>
+
+    <style name="App.Player.TimeStyle" parent="Widget.Leanback.PlaybackControlsTimeStyle">
+        <item name="android:textAppearance">@style/App.Player.TimeAppearance</item>
+    </style>
+
+</resources>
